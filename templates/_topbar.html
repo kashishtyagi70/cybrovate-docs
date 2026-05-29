@@ -1,0 +1,17 @@
+<!-- Shared top navigation used by both the home page and docs pages. -->
+<header class="topbar">
+    <a class="topbar-brand" href="/" aria-label="Cybrovate Documentation home">
+        <!-- Only your provided logo is shown here. Replace Images/favicon.ico to change it. -->
+        <img class="topbar-logo" src="{{ url_for('images', path='/favicon.ico') }}" alt="Cybrovate Documentation" width="36" height="36">
+        <span class="topbar-brand-name">Cybrovate Documentation</span>
+    </a>
+
+    <!-- docs_entry_url points to the first markdown page found inside docs/. -->
+    <a class="topbar-section" href="{{ docs_entry_url }}">Documentation</a>
+
+    <!-- External company website link. -->
+    <a class="topbar-link" href="https://www.cybrovate.com/" target="_blank" rel="noreferrer">Cybrovate</a>
+
+    <!-- Decorative small circle on the right, matching the reference UI. -->
+    <span class="topbar-toggle" aria-hidden="true"></span>
+</header>

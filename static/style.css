@@ -1,0 +1,798 @@
+/* Global theme tokens used throughout the documentation UI. */
+:root {
+    --bg: #0f1828;
+    --bg-deep: #0c1422;
+    --topbar: #101927;
+    --sidebar: #111b2a;
+    --line: #263348;
+    --line-bright: #d7deea;
+    --text: #ffffff;
+    --muted: #c3cad6;
+    --muted-dim: #6f7b8d;
+    --blue: #2d6df6;
+    --blue-soft: #14213b;
+    --code: #070d16;
+    --font: Poppins, "Poppins Fallback", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+    --display: Montserrat, Poppins, sans-serif;
+}
+
+/* Make element sizing predictable across the app. */
+* {
+    box-sizing: border-box;
+}
+
+/* Base page background. */
+html {
+    background: var(--bg);
+}
+
+/* Default text, background, and font for every page. */
+body {
+    margin: 0;
+    min-height: 100vh;
+    color: var(--text);
+    background: var(--bg);
+    font-family: var(--font);
+    text-rendering: optimizeLegibility;
+}
+
+/* Links inherit color by default; individual sections style them later. */
+a {
+    color: inherit;
+}
+
+/* Text selection color. */
+::selection {
+    color: #ffffff;
+    background: var(--blue);
+}
+
+/* Documentation page shell: topbar row + sidebar/content row. */
+.app-shell {
+    display: grid;
+    grid-template-columns: 308px minmax(0, 1fr);
+    grid-template-rows: 72px minmax(0, 1fr);
+    height: 100vh;
+    background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.012), transparent 180px),
+        var(--bg);
+}
+
+/* Fixed-height top navigation bar shared by home and docs pages. */
+.topbar {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    height: 72px;
+    padding: 0 24px;
+    background: var(--topbar);
+    border-bottom: 1px solid var(--line);
+}
+
+/* Left brand area inside the topbar. */
+.topbar-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 260px;
+    height: 72px;
+    overflow: hidden;
+    color: #ffffff;
+    text-decoration: none;
+}
+
+/* Company logo image in the topbar. */
+.topbar-logo {
+    display: block;
+    width: 36px;
+    height: 36px;
+    min-width: 36px;
+    min-height: 36px;
+    max-width: 36px;
+    max-height: 36px;
+    object-fit: contain;
+}
+
+/* Text label next to the logo. */
+.topbar-brand-name {
+    color: #ffffff;
+    font-size: 15px;
+    font-weight: 800;
+    line-height: 1;
+    white-space: nowrap;
+}
+
+/* Topbar link that opens the documentation entry page. */
+.topbar-section {
+    height: 72px;
+    padding: 0 28px;
+    display: flex;
+    align-items: center;
+    border-left: 1px solid transparent;
+    color: var(--muted);
+    font-size: 15px;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+/* External Cybrovate website link on the right side. */
+.topbar-link {
+    margin-left: auto;
+    color: var(--muted);
+    font-size: 15px;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+/* Hover state for topbar links. */
+.topbar-section:hover,
+.topbar-link:hover {
+    color: #ffffff;
+}
+
+/* Small external-link symbol after the Cybrovate link. */
+.topbar-link::after {
+    content: "";
+    display: inline-block;
+    width: 9px;
+    height: 9px;
+    margin-left: 5px;
+    border-top: 2px solid currentColor;
+    border-right: 2px solid currentColor;
+    transform: translateY(-2px) rotate(0deg);
+}
+
+/* Decorative circle on the far right, matching the reference UI. */
+.topbar-toggle {
+    width: 18px;
+    height: 18px;
+    margin-left: 20px;
+    border: 2px solid #ffffff;
+    border-radius: 50%;
+}
+
+/* Left documentation sidebar. */
+.sidebar {
+    grid-column: 1;
+    grid-row: 2;
+    height: calc(100vh - 72px);
+    overflow-y: auto;
+    padding: 18px 24px 32px 30px;
+    background: var(--sidebar);
+    border-right: 1px solid var(--line);
+}
+
+/* Thin custom scrollbars for sidebar and content area. */
+.sidebar::-webkit-scrollbar,
+.content::-webkit-scrollbar {
+    width: 9px;
+}
+
+/* Scrollbar track remains transparent so it blends into the dark UI. */
+.sidebar::-webkit-scrollbar-track,
+.content::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+/* Visible scrollbar thumb. */
+.sidebar::-webkit-scrollbar-thumb,
+.content::-webkit-scrollbar-thumb {
+    background: rgba(195, 202, 214, 0.24);
+    border: 3px solid transparent;
+    border-radius: 999px;
+    background-clip: padding-box;
+}
+
+/* Wrapper around the sidebar navigation tree. */
+.navigation {
+    padding-bottom: 24px;
+}
+
+/* Reset list styles for all navigation levels. */
+.nav-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+/* First nested sidebar level. */
+.nav-depth-1 {
+    margin: 9px 0 14px 12px;
+}
+
+/* Deeper sidebar levels get a subtle vertical guide line. */
+.nav-depth-2,
+.nav-depth-3,
+.nav-depth-4 {
+    margin: 8px 0 13px 12px;
+    padding-left: 12px;
+    border-left: 1px solid rgba(195, 202, 214, 0.12);
+}
+
+/* Folder/section labels in the sidebar. */
+.nav-section-title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    min-height: 30px;
+    color: var(--muted);
+    font-size: 16px;
+    font-weight: 800;
+    line-height: 1.2;
+    text-transform: lowercase;
+}
+
+/* Deeper folder labels are brighter. */
+.nav-depth-2 > .nav-section > .nav-section-title,
+.nav-depth-3 > .nav-section > .nav-section-title {
+    color: #ffffff;
+}
+
+/* Small chevron shape beside folder labels. */
+.nav-chevron {
+    width: 10px;
+    height: 10px;
+    flex: 0 0 auto;
+    border-right: 2px solid #0b111b;
+    border-bottom: 2px solid #0b111b;
+    transform: rotate(45deg) translateY(-2px);
+}
+
+/* Sidebar page links generated from markdown files. */
+.nav-page a {
+    display: block;
+    margin: 4px 0;
+    padding: 8px 12px;
+    border-radius: 9px;
+    color: var(--muted);
+    font-size: 15px;
+    font-weight: 700;
+    line-height: 1.35;
+    text-decoration: none;
+}
+
+/* Slight indentation for links inside deeper folders. */
+.nav-depth-2 .nav-page a,
+.nav-depth-3 .nav-page a {
+    padding-left: 12px;
+}
+
+/* Sidebar hover state. */
+.nav-page a:hover {
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.04);
+}
+
+/* Current page highlight in the sidebar. */
+.nav-page a.active {
+    color: #ffffff;
+    background: var(--blue);
+}
+
+/* Scrollable documentation content region. */
+.content {
+    grid-column: 2;
+    grid-row: 2;
+    height: calc(100vh - 72px);
+    overflow-y: auto;
+    background: var(--bg);
+}
+
+/* Main docs grid: article column, divider, and right-side TOC column. */
+.content-grid {
+    display: grid;
+    grid-template-columns: minmax(640px, 900px) 90px 1px 16px 360px;
+    column-gap: 0;
+    min-height: 100%;
+    padding: 16px 44px 80px 160px;
+}
+
+/* Vertical divider between article and right heading rail. */
+.content-grid::before {
+    content: "";
+    grid-column: 3;
+    grid-row: 1;
+    width: 1px;
+    min-height: 286px;
+    margin-top: 0;
+    background: var(--line-bright);
+}
+
+/* Article and breadcrumbs wrapper. */
+.document-shell {
+    grid-column: 1;
+    min-width: 0;
+    padding-top: 0;
+}
+
+/* Breadcrumb row above each document. */
+.breadcrumbs {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    min-height: 30px;
+    margin: 0 0 16px;
+    color: #ffffff;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+/* Breadcrumb links and current crumb text. */
+.breadcrumbs a,
+.breadcrumbs span {
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+/* Arrow separator after breadcrumb links. */
+.breadcrumbs a:not(.home-crumb)::after {
+    content: "";
+    display: inline-block;
+    width: 5px;
+    height: 5px;
+    margin-left: 16px;
+    border-top: 1px solid rgba(195, 202, 214, 0.3);
+    border-right: 1px solid rgba(195, 202, 214, 0.3);
+    transform: rotate(45deg) translateY(-1px);
+}
+
+/* Home icon breadcrumb base. */
+.home-crumb {
+    position: relative;
+    width: 18px;
+    height: 18px;
+    color: var(--muted);
+}
+
+/* Home icon square body. */
+.home-crumb::before {
+    content: "";
+    position: absolute;
+    left: 3px;
+    top: 7px;
+    width: 12px;
+    height: 9px;
+    border-radius: 2px;
+    background: #dce4f2;
+}
+
+/* Home icon roof. */
+.home-crumb::after {
+    content: "";
+    position: absolute;
+    left: 3px;
+    top: 3px;
+    width: 12px;
+    height: 12px;
+    background: #dce4f2;
+    transform: rotate(45deg) scale(0.75);
+}
+
+/* Current page breadcrumb pill. */
+.breadcrumb-pill {
+    padding: 7px 13px;
+    border-radius: 999px;
+    color: var(--blue);
+    background: var(--blue-soft);
+}
+
+/* Rendered markdown article. */
+.document {
+    color: #ffffff;
+}
+
+/* Remove extra top margin from the first markdown element. */
+.document > :first-child {
+    margin-top: 0;
+}
+
+/* Markdown headings. */
+.document h1,
+.document h2,
+.document h3,
+.document h4 {
+    color: #ffffff;
+    font-family: var(--display);
+    line-height: 1.16;
+}
+
+/* Main page title from markdown # heading. */
+.document h1 {
+    margin: 0 0 28px;
+    font-size: 48px;
+    font-weight: 800;
+}
+
+/* Additional # headings lower in a markdown document. */
+.document h1:not(:first-child) {
+    margin: 28px 0 20px;
+    font-size: 31px;
+}
+
+/* Markdown ## headings. */
+.document h2 {
+    margin: 44px 0 20px;
+    font-size: 30px;
+    font-weight: 800;
+}
+
+/* Markdown ### headings. */
+.document h3 {
+    margin: 32px 0 14px;
+    font-size: 23px;
+    font-weight: 800;
+}
+
+/* Markdown #### headings. */
+.document h4 {
+    margin: 26px 0 10px;
+    font-size: 18px;
+}
+
+/* Markdown body text, list items, and table cells. */
+.document p,
+.document li,
+.document td {
+    color: #ffffff;
+    font-size: 15.5px;
+    font-weight: 400;
+    line-height: 1.85;
+}
+
+/* Paragraph spacing. */
+.document p {
+    margin: 0 0 22px;
+}
+
+/* Markdown list spacing. */
+.document ul,
+.document ol {
+    margin: 0 0 24px 24px;
+    padding: 0;
+}
+
+/* Space between list items. */
+.document li + li {
+    margin-top: 6px;
+}
+
+/* Bullet/number marker color. */
+.document li::marker {
+    color: var(--blue);
+}
+
+/* Links inside rendered markdown. */
+.document a {
+    color: #69a2ff;
+    text-decoration: none;
+}
+
+/* Markdown link hover state. */
+.document a:hover {
+    text-decoration: underline;
+}
+
+/* Bold text inside markdown. */
+.document strong {
+    font-weight: 800;
+}
+
+/* Horizontal rule generated by --- in markdown. */
+.document hr {
+    height: 1px;
+    margin: 22px 0 30px;
+    border: 0;
+    background: var(--line-bright);
+}
+
+/* Inline code style. */
+.document code {
+    padding: 2px 6px;
+    border-radius: 5px;
+    color: #dbe5f5;
+    background: rgba(3, 8, 15, 0.85);
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+    font-size: 0.92em;
+}
+
+/* Fenced code block style. */
+.document pre {
+    overflow-x: auto;
+    margin: 22px 0 24px;
+    padding: 21px;
+    border: 1px solid rgba(255, 255, 255, 0.76);
+    border-radius: 14px;
+    background: var(--code);
+}
+
+/* Code text inside fenced code blocks. */
+.document pre code {
+    padding: 0;
+    color: rgba(195, 202, 214, 0.42);
+    background: transparent;
+    white-space: pre;
+}
+
+/* Markdown table container. */
+.document table {
+    width: 100%;
+    margin: 24px 0;
+    border-collapse: collapse;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    background: rgba(3, 8, 15, 0.3);
+}
+
+/* Table cells. */
+.document th,
+.document td {
+    padding: 12px 14px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+    text-align: left;
+}
+
+/* Table header row. */
+.document th {
+    color: #ffffff;
+    background: rgba(45, 109, 246, 0.2);
+    font-weight: 800;
+}
+
+/* Remove border from last table row. */
+.document tr:last-child td {
+    border-bottom: 0;
+}
+
+/* Markdown blockquote style. */
+.document blockquote {
+    margin: 24px 0;
+    padding: 12px 18px;
+    border-left: 4px solid var(--blue);
+    color: #ffffff;
+    background: rgba(45, 109, 246, 0.1);
+}
+
+/* Right-side "on this page" rail. */
+.toc-panel {
+    grid-column: 5;
+    padding-top: 24px;
+    color: rgba(195, 202, 214, 0.28);
+}
+
+/* Sticky list of current document headings. */
+.toc-list {
+    position: sticky;
+    top: 24px;
+    margin: 0;
+    padding: 0 0 0 0;
+    list-style: none;
+}
+
+/* Spacing between TOC links. */
+.toc-list li {
+    margin: 0 0 14px;
+}
+
+/* Individual TOC links. */
+.toc-list a {
+    color: rgba(195, 202, 214, 0.28);
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 1.45;
+    text-decoration: none;
+}
+
+/* TOC hover state. */
+.toc-list a:hover {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+/* Level 2 TOC headings. */
+.toc-level-2 {
+    padding-left: 0;
+}
+
+/* Level 3 TOC headings are indented. */
+.toc-level-3 {
+    padding-left: 14px;
+}
+
+/* Full home page shell. */
+.home-shell {
+    min-height: 100vh;
+    background:
+        radial-gradient(circle at 25% 55%, rgba(24, 119, 242, 0.08), transparent 25%),
+        linear-gradient(90deg, #0b141f 0%, #111a2b 48%, #0f1828 100%);
+}
+
+/* Centers the homepage hero under the topbar. */
+.home-main {
+    min-height: calc(100vh - 72px);
+    display: grid;
+    place-items: center;
+    padding: 72px 64px 82px;
+}
+
+/* Two-column homepage hero: copy on left, preview on right. */
+.home-hero {
+    display: grid;
+    grid-template-columns: minmax(420px, 540px) minmax(470px, 570px);
+    align-items: center;
+    gap: clamp(80px, 10vw, 150px);
+    width: min(100%, 1200px);
+}
+
+/* Left side of the homepage hero. */
+.home-copy {
+    min-width: 0;
+}
+
+/* Small pill above the homepage headline. */
+.home-kicker {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 38px;
+    margin-bottom: 28px;
+    padding: 0 18px;
+    border-radius: 999px;
+    color: #ffffff;
+    background: #1e2c3f;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    font-size: 13px;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+
+/* Large homepage headline. */
+.home-copy h1 {
+    margin: 0;
+    color: #ffffff;
+    font-family: var(--display);
+    font-size: 64px;
+    font-weight: 800;
+    line-height: 1.1;
+}
+
+/* Homepage supporting paragraph. */
+.home-copy p {
+    width: min(100%, 560px);
+    margin: 24px 0 38px;
+    color: #e2ebff;
+    font-size: 20px;
+    font-weight: 400;
+    line-height: 1.8;
+}
+
+/* Main "Open Documentation" button. */
+.home-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 214px;
+    min-height: 55px;
+    padding: 0 28px;
+    border-radius: 10px;
+    color: #ffffff;
+    background: var(--blue);
+    box-shadow: 0 8px 0 rgba(7, 12, 22, 0.5);
+    font-size: 15px;
+    font-weight: 800;
+    text-decoration: none;
+}
+
+/* Button hover state. */
+.home-button:hover {
+    background: #3b7dff;
+}
+
+/* Right-side preview column. */
+.home-preview {
+    min-width: 0;
+}
+
+/* Outer terminal preview window. */
+.preview-window {
+    width: min(100%, 570px);
+    min-height: 556px;
+    padding: 30px;
+    border: 1px solid rgba(145, 158, 171, 0.18);
+    border-radius: 22px;
+    background: #111b2d;
+    box-shadow: 0 26px 80px rgba(0, 0, 0, 0.28);
+}
+
+/* Three colored dots at the top of the terminal preview. */
+.preview-dots {
+    display: flex;
+    gap: 9px;
+    margin-bottom: 20px;
+}
+
+/* First preview dot. */
+.preview-dots span {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #ff4b42;
+}
+
+/* Second preview dot. */
+.preview-dots span:nth-child(2) {
+    background: #ffb436;
+}
+
+/* Third preview dot. */
+.preview-dots span:nth-child(3) {
+    background: #20bf8f;
+}
+
+/* Inner terminal-like navigation preview. */
+.preview-terminal {
+    min-height: 446px;
+    padding: 26px 20px;
+    border: 1px solid rgba(145, 158, 171, 0.2);
+    border-radius: 16px;
+    background: #020716;
+    color: #ffffff;
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+    font-size: 15px;
+    line-height: 1.75;
+}
+
+/* Reset list styles inside terminal preview. */
+.terminal-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+/* Folder/section in terminal preview. */
+.terminal-section {
+    margin: 0 0 26px;
+}
+
+/* Folder label spacing in terminal preview. */
+.terminal-section > div {
+    margin-bottom: 5px;
+}
+
+/* Markdown page entry in terminal preview. */
+.terminal-page {
+    position: relative;
+    margin: 0;
+    padding-left: 30px;
+}
+
+/* Nested preview tree indentation. */
+.terminal-depth-1,
+.terminal-depth-2,
+.terminal-depth-3 {
+    position: relative;
+    margin-left: 12px;
+    padding-left: 24px;
+}
+
+/* Vertical branch line in terminal preview. */
+.terminal-depth-1::before,
+.terminal-depth-2::before,
+.terminal-depth-3::before {
+    content: "";
+    position: absolute;
+    top: 4px;
+    bottom: 8px;
+    left: 0;
+    width: 2px;
+    background: linear-gradient(#ffffff, #ff2d8d, #ffffff);
+}
+
+/* Horizontal branch line before terminal preview page names. */
+.terminal-page::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 15px;
+    width: 22px;
+    height: 1px;
+    background: #ffffff;
+}

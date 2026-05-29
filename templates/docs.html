@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+
+{# Recursive macro: converts app.py navigation data into nested sidebar HTML. #}
+{% macro render_nav(items, depth=0) %}
+    <ul class="nav-list nav-depth-{{ depth }}">
+        {% for item in items %}
+            {% if item.type == "section" %}
+                {# Folder from docs/: render its title and then render children. #}
+                <li class="nav-section">
+                    <div class="nav-section-title">
+                        <span>{{ item.title }}</span>
+                        <span class="nav-chevron" aria-hidden="true"></span>
+                    </div>
+                    {{ render_nav(item.children, depth + 1) }}
+                </li>
+            {% else %}
+                {# Markdown file from docs/: render as a clickable page link. #}
+                <li class="nav-page">
+                    <a
+                        href="/{{ item.slug }}"
+                        class="{% if current_page == item.slug %}active{% endif %}"
+                        {% if current_page == item.slug %}aria-current="page"{% endif %}
+                    >
+                        {{ item.title }}
+                    </a>
+                </li>
+            {% endif %}
+        {% endfor %}
+    </ul>
+{% endmacro %}
+
+{% block content %}
+<div class="app-shell">
+    <!-- Shared header/navigation bar. -->
+    {% include "_topbar.html" %}
+
+    <!-- Left sidebar comes from the docs/ folder structure. -->
+    <aside class="sidebar">
+        <nav class="navigation" aria-label="Documentation navigation">
+            {{ render_nav(navigation) }}
+        </nav>
+    </aside>
+
+    <!-- Main documentation area. -->
+    <main class="content">
+        <div class="content-grid">
+            <div class="document-shell">
+                <!-- Breadcrumbs are built from the current page path. -->
+                <nav class="breadcrumbs" aria-label="Breadcrumb">
+                    {% for crumb in breadcrumbs %}
+                        {% if loop.first %}
+                            <a class="home-crumb" href="{{ crumb.href }}" aria-label="Documentation home"></a>
+                        {% elif loop.last %}
+                            <span class="breadcrumb-pill" aria-current="page">{{ crumb.title }}</span>
+                        {% else %}
+                            <a href="{{ crumb.href }}">{{ crumb.title }}</a>
+                        {% endif %}
+                    {% endfor %}
+                </nav>
+
+                <!-- content is already converted from markdown to HTML in app.py. -->
+                <article class="document">
+                    {{ content | safe }}
+                </article>
+            </div>
+
+            <!-- Right rail: generated from markdown headings via the toc extension. -->
+            <aside class="toc-panel" aria-label="On this page">
+                {% if toc_items %}
+                    <ol class="toc-list">
+                        {% for item in toc_items %}
+                            <li class="toc-level-{{ item.level }}">
+                                <a href="#{{ item.id }}">{{ item.name }}</a>
+                            </li>
+                        {% endfor %}
+                    </ol>
+                {% endif %}
+            </aside>
+        </div>
+    </main>
+</div>
+{% endblock %}

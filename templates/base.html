@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <!-- Basic browser metadata. -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="dark">
+
+    <!-- page_title is provided by app.py for home and docs pages. -->
+    <title>{% if page_title %}{{ page_title }} - {% endif %}Cybrovate Docs</title>
+
+    <!-- Fonts used by the Cybrovate-style UI. -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Browser tab icon and main stylesheet. -->
+    <link rel="icon" href="{{ url_for('images', path='/favicon.ico') }}">
+    <link rel="stylesheet" href="{{ url_for('static', path='/style.css') }}">
+</head>
+<body>
+    <!-- Child templates inject their page layout here. -->
+    {% block content %}{% endblock %}
+</body>
+</html>

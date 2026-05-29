@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{# Renders the docs folder tree inside the terminal-style preview. #}
+{% macro render_terminal_tree(items, depth=0) %}
+    <ul class="terminal-list terminal-depth-{{ depth }}">
+        {% for item in items %}
+            {% if item.type == "section" %}
+                {# Folder/section item from app.py navigation data. #}
+                <li class="terminal-section">
+                    <div>{{ item.title }}</div>
+                    {{ render_terminal_tree(item.children, depth + 1) }}
+                </li>
+            {% else %}
+                {# Markdown page item from app.py navigation data. #}
+                <li class="terminal-page">{{ item.title }}</li>
+            {% endif %}
+        {% endfor %}
+    </ul>
+{% endmacro %}
+
+{% block content %}
+<div class="home-shell">
+    <!-- Reuse the same topbar used by the docs page. -->
+    {% include "_topbar.html" %}
+
+    <main class="home-main">
+        <!-- Main landing hero shown when the user opens localhost. -->
+        <section class="home-hero" aria-labelledby="home-title">
+            <div class="home-copy">
+                <div class="home-kicker">Cybrovate Documentation</div>
+                <h1 id="home-title">Secure.<br>Modern.<br>Documentation.</h1>
+                <p>
+                    Centralized onboarding, cloud infrastructure, endpoint management,
+                    security workflows, and enterprise operational guides.
+                </p>
+
+                <!-- Opens the first detected markdown page. -->
+                <a class="home-button" href="{{ docs_entry_url }}">Open Documentation</a>
+            </div>
+
+            <!-- Static visual preview of the automatically generated docs tree. -->
+            <div class="home-preview" aria-hidden="true">
+                <div class="preview-window">
+                    <div class="preview-dots">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                    <div class="preview-terminal">
+                        <!-- navigation is passed from app.py and mirrors docs/. -->
+                        {{ render_terminal_tree(navigation) }}
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+</div>
+{% endblock %}
