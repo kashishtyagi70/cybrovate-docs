@@ -1,5 +1,12 @@
 <!-- Shared top navigation used by both the home page and docs pages. -->
 <header class="topbar">
+    <!-- Mobile-only button that opens the sidebar as an overlay. -->
+    <button class="mobile-sidebar-button" type="button" data-mobile-sidebar-toggle aria-label="Open documentation navigation" aria-expanded="false">
+        <span></span>
+        <span></span>
+        <span></span>
+    </button>
+
     <a class="topbar-brand" href="/" aria-label="Cybrovate Documentation home">
         <!-- Only your provided logo is shown here. Replace Images/favicon.ico to change it. -->
         <img class="topbar-logo" src="{{ url_for('images', path='/favicon.ico') }}" alt="Cybrovate Documentation" width="36" height="36">

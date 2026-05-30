@@ -1,0 +1,147 @@
+// This file keeps small UI behaviors out of the Python backend.
+// It handles sidebar collapse, folder expand/collapse, and code copy buttons.
+
+document.addEventListener("DOMContentLoaded", () => {
+    const shell = document.querySelector(".app-shell");
+    const sidebarToggle = document.querySelector("[data-sidebar-toggle]");
+    const mobileSidebarToggle = document.querySelector("[data-mobile-sidebar-toggle]");
+    const sidebarOverlay = document.querySelector("[data-sidebar-overlay]");
+    const desktopSidebarQuery = window.matchMedia("(min-width: 861px)");
+
+    // Saves the desktop sidebar state so refreshes keep the user's preference.
+    const setDesktopSidebarCollapsed = (collapsed) => {
+        if (!shell || !sidebarToggle) {
+            return;
+        }
+
+        shell.classList.toggle("sidebar-collapsed", collapsed);
+        sidebarToggle.setAttribute("aria-expanded", String(!collapsed));
+        sidebarToggle.setAttribute("aria-label", collapsed ? "Expand sidebar" : "Collapse sidebar");
+        localStorage.setItem("cybrovateSidebarCollapsed", String(collapsed));
+    };
+
+    // Mobile sidebar opens like a drawer, independent from the desktop collapse state.
+    const setMobileSidebarOpen = (open) => {
+        if (!shell || !mobileSidebarToggle) {
+            return;
+        }
+
+        shell.classList.toggle("sidebar-mobile-open", open);
+        document.body.classList.toggle("sidebar-lock", open);
+        mobileSidebarToggle.setAttribute("aria-expanded", String(open));
+        mobileSidebarToggle.setAttribute("aria-label", open ? "Close documentation navigation" : "Open documentation navigation");
+    };
+
+    // Restore desktop collapsed state after page reload.
+    if (shell && sidebarToggle && localStorage.getItem("cybrovateSidebarCollapsed") === "true") {
+        setDesktopSidebarCollapsed(true);
+    }
+
+    // The sidebar collapse button is shown inside the sidebar on desktop.
+    sidebarToggle?.addEventListener("click", () => {
+        if (!desktopSidebarQuery.matches) {
+            return;
+        }
+
+        setDesktopSidebarCollapsed(!shell.classList.contains("sidebar-collapsed"));
+    });
+
+    // The topbar menu button opens navigation on mobile.
+    mobileSidebarToggle?.addEventListener("click", () => {
+        setMobileSidebarOpen(!shell.classList.contains("sidebar-mobile-open"));
+    });
+
+    // Tapping the backdrop closes mobile navigation.
+    sidebarOverlay?.addEventListener("click", () => {
+        setMobileSidebarOpen(false);
+    });
+
+    // Close the mobile drawer after selecting a page link.
+    document.querySelectorAll(".navigation a").forEach((link) => {
+        link.addEventListener("click", () => {
+            setMobileSidebarOpen(false);
+        });
+    });
+
+    // Each sidebar folder can be expanded or collapsed.
+    document.querySelectorAll("[data-nav-section-toggle]").forEach((button) => {
+        button.addEventListener("click", () => {
+            const section = button.closest(".nav-section");
+
+            if (!section) {
+                return;
+            }
+
+            const nextCollapsed = !section.classList.contains("is-collapsed");
+            section.classList.toggle("is-collapsed", nextCollapsed);
+            button.setAttribute("aria-expanded", String(!nextCollapsed));
+        });
+    });
+
+    // Tries modern clipboard first, then falls back to the older textarea copy path.
+    const writeTextToClipboard = async (text) => {
+        if (window.navigator?.clipboard?.writeText) {
+            try {
+                await window.navigator.clipboard.writeText(text);
+                return true;
+            } catch (error) {
+                // Some browser contexts block the modern clipboard API.
+            }
+        }
+
+        const textarea = document.createElement("textarea");
+
+        textarea.value = text;
+        textarea.setAttribute("readonly", "");
+        textarea.style.position = "fixed";
+        textarea.style.top = "-1000px";
+        textarea.style.left = "-1000px";
+        document.body.appendChild(textarea);
+        textarea.select();
+
+        const copied = document.execCommand?.("copy") || false;
+        textarea.remove();
+        return copied;
+    };
+
+    // Adds a copy button to every fenced markdown code block.
+    document.querySelectorAll(".document pre").forEach((pre) => {
+        if (pre.closest(".code-block")) {
+            return;
+        }
+
+        const code = pre.querySelector("code");
+        const wrapper = document.createElement("div");
+        const copyButton = document.createElement("button");
+
+        wrapper.className = "code-block";
+        copyButton.type = "button";
+        copyButton.className = "copy-code-button";
+        copyButton.textContent = "Copy";
+        copyButton.setAttribute("aria-label", "Copy code block");
+
+        pre.parentNode.insertBefore(wrapper, pre);
+        wrapper.appendChild(pre);
+        wrapper.appendChild(copyButton);
+
+        copyButton.addEventListener("click", async () => {
+            const text = code ? code.innerText : pre.innerText;
+
+            if (await writeTextToClipboard(text)) {
+                copyButton.textContent = "Copied";
+                window.setTimeout(() => {
+                    copyButton.textContent = "Copy";
+                }, 1400);
+            } else {
+                // Last fallback: select the code text so the user can copy manually.
+                const selection = window.getSelection();
+                const range = document.createRange();
+
+                range.selectNodeContents(code || pre);
+                selection?.removeAllRanges();
+                selection?.addRange(range);
+                copyButton.textContent = "Select";
+            }
+        });
+    });
+});

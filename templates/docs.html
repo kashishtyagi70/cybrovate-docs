@@ -7,11 +7,16 @@
             {% if item.type == "section" %}
                 {# Folder from docs/: render its title and then render children. #}
                 <li class="nav-section">
-                    <div class="nav-section-title">
-                        <span>{{ item.title }}</span>
+                    <button class="nav-section-title" type="button" data-nav-section-toggle aria-expanded="true">
+                        <span class="nav-section-label">
+                            <span class="nav-folder-icon" aria-hidden="true">+</span>
+                            <span>{{ item.title }}</span>
+                        </span>
                         <span class="nav-chevron" aria-hidden="true"></span>
+                    </button>
+                    <div class="nav-children">
+                        {{ render_nav(item.children, depth + 1) }}
                     </div>
-                    {{ render_nav(item.children, depth + 1) }}
                 </li>
             {% else %}
                 {# Markdown file from docs/: render as a clickable page link. #}
@@ -36,10 +41,21 @@
 
     <!-- Left sidebar comes from the docs/ folder structure. -->
     <aside class="sidebar">
+        <div class="sidebar-toolbar">
+            <span class="sidebar-title">Navigation</span>
+            <!-- Collapses the full sidebar on desktop. On mobile, the topbar button opens it again. -->
+            <button class="sidebar-collapse-button" type="button" data-sidebar-toggle aria-label="Collapse sidebar" aria-expanded="true">
+                <span class="sidebar-collapse-icon" aria-hidden="true"></span>
+            </button>
+        </div>
+
         <nav class="navigation" aria-label="Documentation navigation">
             {{ render_nav(navigation) }}
         </nav>
     </aside>
+
+    <!-- Mobile overlay appears behind the sidebar when navigation is open. -->
+    <button class="sidebar-overlay" type="button" data-sidebar-overlay aria-label="Close documentation navigation"></button>
 
     <!-- Main documentation area. -->
     <main class="content">
