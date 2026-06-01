@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="dashboard-shell">
+    {% include "_topbar.html" %}
+
+    <main class="dashboard-main">
+        <section class="dashboard-header">
+            <div>
+                <p class="dashboard-kicker">Access Control</p>
+                <h1>Documentation Dashboard</h1>
+            </div>
+            <a class="dashboard-link-button" href="/docs">View Public Docs</a>
+        </section>
+
+        <section class="dashboard-panel" aria-labelledby="groups-title">
+            <div class="dashboard-panel-header">
+                <div>
+                    <h2 id="groups-title">Groups</h2>
+                    <p>Create groups that can later be connected to authenticated users.</p>
+                </div>
+            </div>
+
+            <form class="group-form" action="/admin/groups" method="post">
+                <label>
+                    <span>Group name</span>
+                    <input name="name" type="text" maxlength="100" required>
+                </label>
+                <label>
+                    <span>Description</span>
+                    <input name="description" type="text" maxlength="500">
+                </label>
+                <button type="submit">Add Group</button>
+            </form>
+
+            {% if groups %}
+                <div class="group-list" aria-label="Existing groups">
+                    {% for group in groups %}
+                        <span class="group-pill">{{ group.name }}</span>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </section>
+
+        <section class="dashboard-panel" aria-labelledby="pages-title">
+            <div class="dashboard-panel-header">
+                <div>
+                    <h2 id="pages-title">Pages</h2>
+                    <p>Public pages are visible now. Admin, role, and group pages are stored for the next auth step.</p>
+                </div>
+            </div>
+
+            <div class="page-access-list">
+                {% for page in pages %}
+                    {% set selected_role_ids = page.roles | map(attribute="id") | list %}
+                    {% set selected_group_ids = page.groups | map(attribute="id") | list %}
+                    <form class="page-access-row" action="/admin/pages/{{ page.id }}/access" method="post">
+                        <div class="page-access-title">
+                            <strong>{{ page.title }}</strong>
+                            <span>{{ page.slug }}</span>
+                        </div>
+
+                        <label class="field-block">
+                            <span>Visibility</span>
+                            <select name="access_mode">
+                                <option value="public" {% if page.access_mode == "public" %}selected{% endif %}>Public</option>
+                                <option value="roles" {% if page.access_mode == "roles" %}selected{% endif %}>Admin / role based</option>
+                                <option value="groups" {% if page.access_mode == "groups" %}selected{% endif %}>Group based</option>
+                            </select>
+                        </label>
+
+                        <fieldset class="access-options">
+                            <legend>Roles</legend>
+                            {% for role in roles %}
+                                <label>
+                                    <input type="checkbox" name="role_ids" value="{{ role.id }}" {% if role.id in selected_role_ids %}checked{% endif %}>
+                                    <span>{{ role.name }}</span>
+                                </label>
+                            {% endfor %}
+                        </fieldset>
+
+                        <fieldset class="access-options">
+                            <legend>Groups</legend>
+                            {% if groups %}
+                                {% for group in groups %}
+                                    <label>
+                                        <input type="checkbox" name="group_ids" value="{{ group.id }}" {% if group.id in selected_group_ids %}checked{% endif %}>
+                                        <span>{{ group.name }}</span>
+                                    </label>
+                                {% endfor %}
+                            {% else %}
+                                <span class="empty-option">No groups yet</span>
+                            {% endif %}
+                        </fieldset>
+
+                        <label class="field-block">
+                            <span>Notes</span>
+                            <input name="notes" type="text" value="{{ page.notes or '' }}" maxlength="500">
+                        </label>
+
+                        <label class="listed-toggle">
+                            <input type="checkbox" name="is_listed" value="true" {% if page.is_listed %}checked{% endif %}>
+                            <span>Show in public navigation</span>
+                        </label>
+
+                        <button type="submit">Save</button>
+                    </form>
+                {% endfor %}
+            </div>
+        </section>
+    </main>
+</div>
+{% endblock %}

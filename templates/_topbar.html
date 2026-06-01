@@ -13,8 +13,19 @@
         <span class="topbar-brand-name">Cybrovate Documentation</span>
     </a>
 
-    <!-- External company website link. -->
-    <a class="topbar-link" href="https://www.cybrovate.com/" target="_blank" rel="noreferrer">Cybrovate</a>
+    <div class="topbar-actions">
+        <a class="topbar-link topbar-dashboard-link" href="/admin/dashboard">Dashboard</a>
+        {% if current_user %}
+            <form class="topbar-logout-form" action="/logout" method="post">
+                <button class="topbar-link topbar-logout-button" type="submit">Logout</button>
+            </form>
+        {% else %}
+            <a class="topbar-link" href="/login">Login</a>
+        {% endif %}
+
+        <!-- External company website link. -->
+        <a class="topbar-link" href="https://www.cybrovate.com/" target="_blank" rel="noreferrer">Cybrovate</a>
+    </div>
 
     <!-- Theme switcher: static/app.js changes the page between dark and light. -->
     <button class="topbar-toggle" type="button" data-theme-toggle aria-label="Switch to light theme" aria-pressed="false" title="Switch theme">

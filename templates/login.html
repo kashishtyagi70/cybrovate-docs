@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="login-shell">
+    {% include "_topbar.html" %}
+
+    <main class="login-main">
+        <section class="login-card" aria-labelledby="login-title">
+            <div class="login-brand-mark">
+                <img src="{{ url_for('images', path='/favicon.ico') }}" alt="" width="44" height="44">
+            </div>
+
+            {% if setup_mode %}
+                <p class="dashboard-kicker">First Admin</p>
+                <h1 id="login-title">Create your admin account</h1>
+                <p class="login-copy">This account will unlock the dashboard and own page visibility settings.</p>
+
+                {% if error %}
+                    <div class="login-error">{{ error }}</div>
+                {% endif %}
+
+                <form class="login-form" action="/setup" method="post">
+                    <label>
+                        <span>Username</span>
+                        <input name="username" type="text" autocomplete="username" required>
+                    </label>
+                    <label>
+                        <span>Email</span>
+                        <input name="email" type="email" autocomplete="email" required>
+                    </label>
+                    <label>
+                        <span>Full name</span>
+                        <input name="full_name" type="text" autocomplete="name" required>
+                    </label>
+                    <label>
+                        <span>Password</span>
+                        <input name="password" type="password" minlength="8" autocomplete="new-password" required>
+                    </label>
+                    <button type="submit">Create Admin</button>
+                </form>
+            {% else %}
+                <p class="dashboard-kicker">Admin Login</p>
+                <h1 id="login-title">Welcome back</h1>
+                <p class="login-copy">Sign in to manage page visibility, roles, and groups.</p>
+
+                {% if error %}
+                    <div class="login-error">{{ error }}</div>
+                {% endif %}
+
+                <form class="login-form" action="/login" method="post">
+                    <label>
+                        <span>Username</span>
+                        <input name="username" type="text" autocomplete="username" required>
+                    </label>
+                    <label>
+                        <span>Password</span>
+                        <input name="password" type="password" autocomplete="current-password" required>
+                    </label>
+                    <button type="submit">Sign In</button>
+                </form>
+            {% endif %}
+        </section>
+    </main>
+</div>
+{% endblock %}
