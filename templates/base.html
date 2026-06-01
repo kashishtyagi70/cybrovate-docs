@@ -4,7 +4,20 @@
     <!-- Basic browser metadata. -->
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="color-scheme" content="dark">
+    <meta name="color-scheme" content="dark light">
+
+    <!-- Apply saved theme before CSS loads so the page does not flash. -->
+    <script>
+        (function () {
+            try {
+                var savedTheme = localStorage.getItem("cybrovateTheme");
+                var systemTheme = window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
+                document.documentElement.setAttribute("data-theme", savedTheme || systemTheme);
+            } catch (error) {
+                document.documentElement.setAttribute("data-theme", "dark");
+            }
+        })();
+    </script>
 
     <!-- page_title is provided by app.py for home and docs pages. -->
     <title>{% if page_title %}{{ page_title }} - {% endif %}Cybrovate Docs</title>
@@ -16,10 +29,10 @@
 
     <!-- Browser tab icon and main stylesheet. -->
     <link rel="icon" href="{{ url_for('images', path='/favicon.ico') }}">
-    <link rel="stylesheet" href="{{ url_for('static', path='/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', path='/style.css') }}?v=scroll-toc-4">
 
     <!-- Small JavaScript helper for sidebar toggles and code copy buttons. -->
-    <script src="{{ url_for('static', path='/app.js') }}" defer></script>
+    <script src="{{ url_for('static', path='/app.js') }}?v=scroll-toc-4" defer></script>
 </head>
 <body>
     <!-- Child templates inject their page layout here. -->

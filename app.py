@@ -41,9 +41,9 @@ app.mount("/images", StaticFiles(directory=str(IMAGES_DIR)), name="images")
 
 def format_title(slug: str) -> str:
     """Turn file/folder names like aws-onboarding into AWS Onboarding."""
-    words = slug.replace("_", "-").split("-")
+    words = slug.replace("_", " ").replace("-", " ").split()
     return " ".join(
-        word.upper() if word.lower() in TITLE_ACRONYMS else word.capitalize()
+        word.upper() if word.lower() in TITLE_ACRONYMS else word[:1].upper() + word[1:].lower()
         for word in words
         if word
     )

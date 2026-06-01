@@ -12,10 +12,71 @@
     --blue: #2d6df6;
     --blue-soft: #14213b;
     --code: #070d16;
+    --code-border: rgba(255, 255, 255, 0.76);
+    --control-bg: rgba(255, 255, 255, 0.05);
+    --control-border: rgba(255, 255, 255, 0.12);
+    --nav-hover: rgba(255, 255, 255, 0.04);
+    --panel-border: rgba(255, 255, 255, 0.07);
+    --table-bg: rgba(3, 8, 15, 0.3);
+    --table-border: rgba(255, 255, 255, 0.14);
+    --table-head-bg: rgba(45, 109, 246, 0.2);
+    --inline-code-text: #dbe5f5;
+    --inline-code-bg: rgba(3, 8, 15, 0.85);
+    --toc-bg: rgba(8, 15, 27, 0.55);
+    --toc-text: rgba(195, 202, 214, 0.52);
+    --toc-hover: rgba(255, 255, 255, 0.86);
+    --home-bg:
+        radial-gradient(circle at 25% 55%, rgba(24, 119, 242, 0.08), transparent 25%),
+        linear-gradient(90deg, #0b141f 0%, #111a2b 48%, #0f1828 100%);
+    --home-copy: #e2ebff;
+    --home-kicker-bg: #1e2c3f;
+    --preview-window-bg: #111b2d;
+    --preview-terminal-bg: #020716;
+    --preview-terminal-text: #ffffff;
+    --on-accent: #ffffff;
     --sidebar-width: 308px;
     --sidebar-collapsed-width: 72px;
     --font: Poppins, "Poppins Fallback", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
     --display: Montserrat, Poppins, sans-serif;
+    color-scheme: dark;
+}
+
+/* Light theme values. The JavaScript toggle switches this data attribute. */
+:root[data-theme="light"] {
+    --bg: #f5f8fc;
+    --bg-deep: #e9eef8;
+    --topbar: #ffffff;
+    --sidebar: #f0f4fb;
+    --line: #d9e2f0;
+    --line-bright: #9dacbf;
+    --text: #0d1728;
+    --muted: #526174;
+    --muted-dim: #7c8899;
+    --blue: #2d6df6;
+    --blue-soft: #e8f0ff;
+    --code: #08111f;
+    --code-border: rgba(13, 23, 40, 0.18);
+    --control-bg: rgba(13, 23, 40, 0.04);
+    --control-border: rgba(13, 23, 40, 0.14);
+    --nav-hover: rgba(45, 109, 246, 0.08);
+    --panel-border: rgba(13, 23, 40, 0.1);
+    --table-bg: rgba(255, 255, 255, 0.7);
+    --table-border: rgba(13, 23, 40, 0.12);
+    --table-head-bg: rgba(45, 109, 246, 0.12);
+    --inline-code-text: #16304f;
+    --inline-code-bg: #e9eff8;
+    --toc-bg: rgba(255, 255, 255, 0.76);
+    --toc-text: #66758a;
+    --toc-hover: #0d1728;
+    --home-bg:
+        radial-gradient(circle at 24% 54%, rgba(45, 109, 246, 0.12), transparent 25%),
+        linear-gradient(90deg, #eef5ff 0%, #ffffff 48%, #edf3fb 100%);
+    --home-copy: #334255;
+    --home-kicker-bg: #e8f0ff;
+    --preview-window-bg: #ffffff;
+    --preview-terminal-bg: #020716;
+    --preview-terminal-text: #ffffff;
+    color-scheme: light;
 }
 
 /* Make element sizing predictable across the app. */
@@ -92,10 +153,10 @@ button {
     width: 40px;
     height: 40px;
     margin-right: 12px;
-    border: 1px solid rgba(255, 255, 255, 0.12);
+    border: 1px solid var(--control-border);
     border-radius: 10px;
-    color: #ffffff;
-    background: rgba(255, 255, 255, 0.04);
+    color: var(--text);
+    background: var(--control-bg);
     cursor: pointer;
 }
 
@@ -115,7 +176,7 @@ button {
     min-width: 260px;
     height: 72px;
     overflow: hidden;
-    color: #ffffff;
+    color: var(--text);
     text-decoration: none;
 }
 
@@ -133,7 +194,7 @@ button {
 
 /* Text label next to the logo. */
 .topbar-brand-name {
-    color: #ffffff;
+    color: var(--text);
     font-size: 15px;
     font-weight: 800;
     line-height: 1;
@@ -165,7 +226,7 @@ button {
 /* Hover state for topbar links. */
 .topbar-section:hover,
 .topbar-link:hover {
-    color: #ffffff;
+    color: var(--text);
 }
 
 /* Small external-link symbol after the Cybrovate link. */
@@ -180,13 +241,54 @@ button {
     transform: translateY(-2px) rotate(0deg);
 }
 
-/* Decorative circle on the far right, matching the reference UI. */
+/* Theme toggle button on the far right of the topbar. */
 .topbar-toggle {
-    width: 18px;
-    height: 18px;
-    margin-left: 20px;
-    border: 2px solid #ffffff;
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    margin-left: 16px;
+    padding: 0;
+    border: 1px solid var(--control-border);
     border-radius: 50%;
+    color: var(--text);
+    background: var(--control-bg);
+    cursor: pointer;
+}
+
+/* Theme icon: moon in dark mode, sun in light mode. */
+.theme-icon {
+    position: relative;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: currentColor;
+}
+
+/* Cuts the moon shape out of the filled circle. */
+.theme-icon::after {
+    content: "";
+    position: absolute;
+    top: -2px;
+    right: -3px;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--topbar);
+}
+
+/* Light theme shows a clean sun icon instead of the moon. */
+:root[data-theme="light"] .theme-icon {
+    width: 15px;
+    height: 15px;
+    box-shadow: 0 0 0 4px rgba(45, 109, 246, 0.18);
+    color: var(--blue);
+}
+
+:root[data-theme="light"] .theme-icon::after {
+    display: none;
 }
 
 /* Left documentation sidebar. */
@@ -213,7 +315,7 @@ button {
 
 /* Sidebar heading, hidden when the sidebar becomes icon-only. */
 .sidebar-title {
-    color: #ffffff;
+    color: var(--text);
     font-size: 13px;
     font-weight: 800;
     letter-spacing: 0;
@@ -225,20 +327,21 @@ button {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 34px;
-    height: 34px;
+    width: 38px;
+    height: 38px;
     flex: 0 0 auto;
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    border-radius: 9px;
-    color: #ffffff;
-    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--control-border);
+    border-radius: 11px;
+    color: var(--text);
+    background: var(--control-bg);
     cursor: pointer;
+    transition: background 160ms ease, border-color 160ms ease, color 160ms ease;
 }
 
 /* Small arrow icon in the collapse button. */
 .sidebar-collapse-icon {
-    width: 9px;
-    height: 9px;
+    width: 10px;
+    height: 10px;
     border-left: 2px solid currentColor;
     border-bottom: 2px solid currentColor;
     transform: rotate(45deg);
@@ -252,7 +355,16 @@ button {
 /* Keep only the collapse button visible in collapsed desktop mode. */
 .app-shell.sidebar-collapsed .sidebar {
     overflow: hidden;
-    padding: 16px 18px;
+    padding: 14px 15px;
+}
+
+/* Make the collapsed sidebar button large enough to look intentional. */
+.app-shell.sidebar-collapsed .sidebar-collapse-button {
+    width: 42px;
+    height: 42px;
+    border-color: rgba(45, 109, 246, 0.55);
+    color: var(--on-accent);
+    background: var(--blue);
 }
 
 /* Hide sidebar text/navigation when the desktop sidebar is collapsed. */
@@ -279,19 +391,23 @@ button {
 
 /* Thin custom scrollbars for sidebar and content area. */
 .sidebar::-webkit-scrollbar,
-.content::-webkit-scrollbar {
+.content::-webkit-scrollbar,
+.preview-terminal::-webkit-scrollbar {
     width: 9px;
+    height: 9px;
 }
 
 /* Scrollbar track remains transparent so it blends into the dark UI. */
 .sidebar::-webkit-scrollbar-track,
-.content::-webkit-scrollbar-track {
+.content::-webkit-scrollbar-track,
+.preview-terminal::-webkit-scrollbar-track {
     background: transparent;
 }
 
 /* Visible scrollbar thumb. */
 .sidebar::-webkit-scrollbar-thumb,
-.content::-webkit-scrollbar-thumb {
+.content::-webkit-scrollbar-thumb,
+.preview-terminal::-webkit-scrollbar-thumb {
     background: rgba(195, 202, 214, 0.24);
     border: 3px solid transparent;
     border-radius: 999px;
@@ -339,7 +455,7 @@ button {
     font-size: 16px;
     font-weight: 800;
     line-height: 1.2;
-    text-transform: lowercase;
+    text-transform: none;
     text-align: left;
     cursor: pointer;
 }
@@ -347,7 +463,7 @@ button {
 /* Deeper folder labels are brighter. */
 .nav-depth-2 > .nav-section > .nav-section-title,
 .nav-depth-3 > .nav-section > .nav-section-title {
-    color: #ffffff;
+    color: var(--text);
 }
 
 /* Folder label text plus the requested plus symbol. */
@@ -367,8 +483,8 @@ button {
     height: 18px;
     flex: 0 0 auto;
     border-radius: 6px;
-    color: #ffffff;
-    background: rgba(255, 255, 255, 0.06);
+    color: var(--on-accent);
+    background: var(--blue);
     font-size: 14px;
     font-weight: 800;
     line-height: 1;
@@ -379,8 +495,8 @@ button {
     width: 10px;
     height: 10px;
     flex: 0 0 auto;
-    border-right: 2px solid #ffffff;
-    border-bottom: 2px solid #ffffff;
+    border-right: 2px solid var(--text);
+    border-bottom: 2px solid var(--text);
     transform: rotate(45deg) translateY(-2px);
     transition: transform 160ms ease;
 }
@@ -421,13 +537,13 @@ button {
 
 /* Sidebar hover state. */
 .nav-page a:hover {
-    color: #ffffff;
-    background: rgba(255, 255, 255, 0.04);
+    color: var(--text);
+    background: var(--nav-hover);
 }
 
 /* Current page highlight in the sidebar. */
 .nav-page a.active {
-    color: #ffffff;
+    color: var(--on-accent);
     background: var(--blue);
 }
 
@@ -443,10 +559,10 @@ button {
 /* Main docs grid: article column, divider, and right-side TOC column. */
 .content-grid {
     display: grid;
-    grid-template-columns: minmax(0, 900px) clamp(32px, 4vw, 64px) 1px clamp(18px, 2vw, 28px) minmax(180px, 220px);
+    grid-template-columns: minmax(0, 1fr) clamp(24px, 3vw, 48px) 1px clamp(16px, 1.6vw, 24px) fit-content(190px);
     column-gap: 0;
     min-height: 100%;
-    padding: 16px clamp(32px, 4vw, 64px) 80px clamp(56px, 8vw, 130px);
+    padding: 16px clamp(24px, 3vw, 48px) 80px clamp(48px, 7vw, 112px);
 }
 
 /* Vertical divider between article and right heading rail. */
@@ -474,7 +590,7 @@ button {
     gap: 16px;
     min-height: 30px;
     margin: 0 0 16px;
-    color: #ffffff;
+    color: var(--text);
     font-size: 12px;
     font-weight: 600;
 }
@@ -540,7 +656,7 @@ button {
 
 /* Rendered markdown article. */
 .document {
-    color: #ffffff;
+    color: var(--text);
 }
 
 /* Remove extra top margin from the first markdown element. */
@@ -553,7 +669,7 @@ button {
 .document h2,
 .document h3,
 .document h4 {
-    color: #ffffff;
+    color: var(--text);
     font-family: var(--display);
     line-height: 1.16;
 }
@@ -595,7 +711,7 @@ button {
 .document p,
 .document li,
 .document td {
-    color: #ffffff;
+    color: var(--text);
     font-size: 15.5px;
     font-weight: 400;
     line-height: 1.85;
@@ -651,8 +767,8 @@ button {
 .document code {
     padding: 2px 6px;
     border-radius: 5px;
-    color: #dbe5f5;
-    background: rgba(3, 8, 15, 0.85);
+    color: var(--inline-code-text);
+    background: var(--inline-code-bg);
     font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
     font-size: 0.92em;
 }
@@ -662,7 +778,7 @@ button {
     overflow-x: auto;
     margin: 22px 0 24px;
     padding: 48px 21px 21px;
-    border: 1px solid rgba(255, 255, 255, 0.76);
+    border: 1px solid var(--code-border);
     border-radius: 14px;
     background: var(--code);
 }
@@ -699,7 +815,7 @@ button {
     padding: 0 10px;
     border: 1px solid rgba(255, 255, 255, 0.16);
     border-radius: 8px;
-    color: #ffffff;
+    color: var(--on-accent);
     background: rgba(45, 109, 246, 0.92);
     font-size: 12px;
     font-weight: 800;
@@ -717,22 +833,22 @@ button {
     width: 100%;
     margin: 24px 0;
     border-collapse: collapse;
-    border: 1px solid rgba(255, 255, 255, 0.18);
-    background: rgba(3, 8, 15, 0.3);
+    border: 1px solid var(--table-border);
+    background: var(--table-bg);
 }
 
 /* Table cells. */
 .document th,
 .document td {
     padding: 12px 14px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+    border-bottom: 1px solid var(--table-border);
     text-align: left;
 }
 
 /* Table header row. */
 .document th {
-    color: #ffffff;
-    background: rgba(45, 109, 246, 0.2);
+    color: var(--text);
+    background: var(--table-head-bg);
     font-weight: 800;
 }
 
@@ -746,15 +862,17 @@ button {
     margin: 24px 0;
     padding: 12px 18px;
     border-left: 4px solid var(--blue);
-    color: #ffffff;
+    color: var(--text);
     background: rgba(45, 109, 246, 0.1);
 }
 
 /* Right-side "on this page" rail. */
 .toc-panel {
     grid-column: 5;
+    width: fit-content;
+    max-width: 190px;
     padding-top: 24px;
-    color: rgba(195, 202, 214, 0.45);
+    color: var(--toc-text);
 }
 
 /* Sticky list of current document headings. */
@@ -762,31 +880,35 @@ button {
     position: sticky;
     top: 24px;
     margin: 0;
-    padding: 12px 14px;
+    width: fit-content;
+    max-width: 190px;
+    padding: 11px 14px;
     list-style: none;
-    border: 1px solid rgba(255, 255, 255, 0.07);
+    border: 1px solid var(--panel-border);
     border-radius: 12px;
-    background: rgba(8, 15, 27, 0.55);
+    background: var(--toc-bg);
     box-shadow: 0 16px 42px rgba(0, 0, 0, 0.14);
 }
 
 /* Spacing between TOC links. */
 .toc-list li {
-    margin: 0 0 14px;
+    margin: 0 0 12px;
 }
 
 /* Individual TOC links. */
 .toc-list a {
-    color: rgba(195, 202, 214, 0.52);
+    display: block;
+    color: var(--toc-text);
     font-size: 12px;
     font-weight: 500;
     line-height: 1.45;
+    overflow-wrap: anywhere;
     text-decoration: none;
 }
 
 /* TOC hover state. */
 .toc-list a:hover {
-    color: rgba(255, 255, 255, 0.8);
+    color: var(--toc-hover);
 }
 
 /* Level 2 TOC headings. */
@@ -802,9 +924,7 @@ button {
 /* Full home page shell. */
 .home-shell {
     min-height: 100vh;
-    background:
-        radial-gradient(circle at 25% 55%, rgba(24, 119, 242, 0.08), transparent 25%),
-        linear-gradient(90deg, #0b141f 0%, #111a2b 48%, #0f1828 100%);
+    background: var(--home-bg);
 }
 
 /* Centers the homepage hero under the topbar. */
@@ -838,8 +958,8 @@ button {
     margin-bottom: 28px;
     padding: 0 18px;
     border-radius: 999px;
-    color: #ffffff;
-    background: #1e2c3f;
+    color: var(--text);
+    background: var(--home-kicker-bg);
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
     font-size: 13px;
     font-weight: 800;
@@ -849,7 +969,7 @@ button {
 /* Large homepage headline. */
 .home-copy h1 {
     margin: 0;
-    color: #ffffff;
+    color: var(--text);
     font-family: var(--display);
     font-size: 64px;
     font-weight: 800;
@@ -860,7 +980,7 @@ button {
 .home-copy p {
     width: min(100%, 560px);
     margin: 24px 0 38px;
-    color: #e2ebff;
+    color: var(--home-copy);
     font-size: 20px;
     font-weight: 400;
     line-height: 1.8;
@@ -875,7 +995,7 @@ button {
     min-height: 55px;
     padding: 0 28px;
     border-radius: 10px;
-    color: #ffffff;
+    color: var(--on-accent);
     background: var(--blue);
     box-shadow: 0 8px 0 rgba(7, 12, 22, 0.5);
     font-size: 15px;
@@ -900,7 +1020,7 @@ button {
     padding: 30px;
     border: 1px solid rgba(145, 158, 171, 0.18);
     border-radius: 22px;
-    background: #111b2d;
+    background: var(--preview-window-bg);
     box-shadow: 0 26px 80px rgba(0, 0, 0, 0.28);
 }
 
@@ -931,12 +1051,13 @@ button {
 
 /* Inner terminal-like navigation preview. */
 .preview-terminal {
-    min-height: 446px;
+    height: 446px;
+    overflow: auto;
     padding: 26px 20px;
     border: 1px solid rgba(145, 158, 171, 0.2);
     border-radius: 16px;
-    background: #020716;
-    color: #ffffff;
+    background: var(--preview-terminal-bg);
+    color: var(--preview-terminal-text);
     font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
     font-size: 15px;
     line-height: 1.75;
@@ -1078,8 +1199,7 @@ button {
         text-overflow: ellipsis;
     }
 
-    .topbar-section,
-    .topbar-toggle {
+    .topbar-section {
         display: none;
     }
 

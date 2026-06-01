@@ -2,11 +2,46 @@
 // It handles sidebar collapse, folder expand/collapse, and code copy buttons.
 
 document.addEventListener("DOMContentLoaded", () => {
+    const root = document.documentElement;
     const shell = document.querySelector(".app-shell");
     const sidebarToggle = document.querySelector("[data-sidebar-toggle]");
     const mobileSidebarToggle = document.querySelector("[data-mobile-sidebar-toggle]");
     const sidebarOverlay = document.querySelector("[data-sidebar-overlay]");
+    const themeToggle = document.querySelector("[data-theme-toggle]");
     const desktopSidebarQuery = window.matchMedia("(min-width: 861px)");
+
+    // Updates the topbar theme button and stores the selected theme.
+    const setTheme = (theme, shouldSave = false) => {
+        const nextTheme = theme === "light" ? "light" : "dark";
+
+        root.setAttribute("data-theme", nextTheme);
+        document.body?.setAttribute("data-theme", nextTheme);
+
+        if (shouldSave) {
+            try {
+                localStorage.setItem("cybrovateTheme", nextTheme);
+            } catch (error) {
+                // Theme still changes even if browser storage is blocked.
+            }
+        }
+
+        if (themeToggle) {
+            const nextLabel = nextTheme === "light" ? "Switch to dark theme" : "Switch to light theme";
+
+            themeToggle.setAttribute("aria-label", nextLabel);
+            themeToggle.setAttribute("aria-pressed", String(nextTheme === "light"));
+            themeToggle.setAttribute("title", nextLabel);
+        }
+    };
+
+    // Keep the button label correct for the theme set in base.html.
+    setTheme(root.getAttribute("data-theme") || "dark");
+
+    // The topbar circle button toggles between dark and light mode.
+    themeToggle?.addEventListener("click", () => {
+        const currentTheme = root.getAttribute("data-theme") === "light" ? "light" : "dark";
+        setTheme(currentTheme === "light" ? "dark" : "light", true);
+    });
 
     // Saves the desktop sidebar state so refreshes keep the user's preference.
     const setDesktopSidebarCollapsed = (collapsed) => {
@@ -17,7 +52,12 @@ document.addEventListener("DOMContentLoaded", () => {
         shell.classList.toggle("sidebar-collapsed", collapsed);
         sidebarToggle.setAttribute("aria-expanded", String(!collapsed));
         sidebarToggle.setAttribute("aria-label", collapsed ? "Expand sidebar" : "Collapse sidebar");
-        localStorage.setItem("cybrovateSidebarCollapsed", String(collapsed));
+
+        try {
+            localStorage.setItem("cybrovateSidebarCollapsed", String(collapsed));
+        } catch (error) {
+            // The sidebar still collapses even if browser storage is blocked.
+        }
     };
 
     // Mobile sidebar opens like a drawer, independent from the desktop collapse state.
@@ -33,8 +73,14 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     // Restore desktop collapsed state after page reload.
-    if (shell && sidebarToggle && localStorage.getItem("cybrovateSidebarCollapsed") === "true") {
-        setDesktopSidebarCollapsed(true);
+    if (shell && sidebarToggle) {
+        try {
+            if (localStorage.getItem("cybrovateSidebarCollapsed") === "true") {
+                setDesktopSidebarCollapsed(true);
+            }
+        } catch (error) {
+            // Ignore blocked storage and keep the sidebar expanded by default.
+        }
     }
 
     // The sidebar collapse button is shown inside the sidebar on desktop.
@@ -144,4 +190,80 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         });
     });
+
+    // Preserve scroll position for each markdown page when navigating back/forward.
+    const docsContent = document.querySelector(".content");
+
+    if (docsContent) {
+        const scrollStorageKey = `cybrovateDocsScroll:${window.location.pathname}`;
+        let scrollSaveTimer;
+
+        if ("scrollRestoration" in window.history) {
+            window.history.scrollRestoration = "manual";
+        }
+
+        const saveScrollPosition = () => {
+            try {
+                sessionStorage.setItem(
+                    scrollStorageKey,
+                    JSON.stringify({
+                        contentTop: docsContent.scrollTop,
+                        windowTop: window.scrollY,
+                    })
+                );
+            } catch (error) {
+                // Navigation still works normally if browser storage is blocked.
+            }
+        };
+
+        const restoreScrollPosition = () => {
+            if (window.location.hash) {
+                return;
+            }
+
+            try {
+                const savedPosition = JSON.parse(sessionStorage.getItem(scrollStorageKey) || "{}");
+
+                if (Number.isFinite(savedPosition.contentTop)) {
+                    docsContent.scrollTop = savedPosition.contentTop;
+                }
+
+                if (Number.isFinite(savedPosition.windowTop)) {
+                    window.scrollTo(0, savedPosition.windowTop);
+                }
+            } catch (error) {
+                // Ignore invalid saved data and leave the page at the browser default.
+            }
+        };
+
+        docsContent.addEventListener(
+            "scroll",
+            () => {
+                window.clearTimeout(scrollSaveTimer);
+                scrollSaveTimer = window.setTimeout(saveScrollPosition, 80);
+            },
+            { passive: true }
+        );
+
+        window.addEventListener(
+            "scroll",
+            () => {
+                window.clearTimeout(scrollSaveTimer);
+                scrollSaveTimer = window.setTimeout(saveScrollPosition, 80);
+            },
+            { passive: true }
+        );
+
+        window.addEventListener("pagehide", saveScrollPosition);
+        document.addEventListener("visibilitychange", () => {
+            if (document.visibilityState === "hidden") {
+                saveScrollPosition();
+            }
+        });
+
+        requestAnimationFrame(() => {
+            restoreScrollPosition();
+            window.setTimeout(restoreScrollPosition, 150);
+        });
+    }
 });
