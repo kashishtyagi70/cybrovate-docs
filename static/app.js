@@ -4,6 +4,7 @@
 document.addEventListener("DOMContentLoaded", () => {
     const root = document.documentElement;
     const shell = document.querySelector(".app-shell");
+    const sidebar = document.querySelector(".sidebar");
     const sidebarToggle = document.querySelector("[data-sidebar-toggle]");
     const mobileSidebarToggle = document.querySelector("[data-mobile-sidebar-toggle]");
     const sidebarOverlay = document.querySelector("[data-sidebar-overlay]");
@@ -102,9 +103,62 @@ document.addEventListener("DOMContentLoaded", () => {
         setMobileSidebarOpen(false);
     });
 
+    // Save/restore the left sidebar scroll so lower sections like Security Hub stay in place.
+    if (sidebar) {
+        const sidebarScrollKey = "cybrovateSidebarScrollTop";
+        let sidebarScrollSaveTimer;
+
+        const saveSidebarScroll = () => {
+            try {
+                sessionStorage.setItem(sidebarScrollKey, String(sidebar.scrollTop));
+            } catch (error) {
+                // The sidebar still works if browser storage is blocked.
+            }
+        };
+
+        const restoreSidebarScroll = () => {
+            try {
+                const savedTop = Number(sessionStorage.getItem(sidebarScrollKey));
+
+                if (Number.isFinite(savedTop) && savedTop > 0) {
+                    sidebar.scrollTop = savedTop;
+                    return;
+                }
+            } catch (error) {
+                // Fall back to the active link if saved data cannot be read.
+            }
+
+            const activeLink = sidebar.querySelector(".nav-page a.active");
+            activeLink?.scrollIntoView({ block: "nearest" });
+        };
+
+        sidebar.addEventListener(
+            "scroll",
+            () => {
+                window.clearTimeout(sidebarScrollSaveTimer);
+                sidebarScrollSaveTimer = window.setTimeout(saveSidebarScroll, 60);
+            },
+            { passive: true }
+        );
+
+        window.addEventListener("pagehide", saveSidebarScroll);
+        requestAnimationFrame(() => {
+            restoreSidebarScroll();
+            window.setTimeout(restoreSidebarScroll, 150);
+        });
+    }
+
     // Close the mobile drawer after selecting a page link.
     document.querySelectorAll(".navigation a").forEach((link) => {
         link.addEventListener("click", () => {
+            if (sidebar) {
+                try {
+                    sessionStorage.setItem("cybrovateSidebarScrollTop", String(sidebar.scrollTop));
+                } catch (error) {
+                    // Ignore blocked storage and continue navigation.
+                }
+            }
+
             setMobileSidebarOpen(false);
         });
     });
