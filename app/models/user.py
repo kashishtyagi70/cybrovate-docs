@@ -8,6 +8,7 @@ from app.database import Base
 
 if TYPE_CHECKING:
     from app.models.audit_log import AuditLog
+    from app.models.document import Document
     from app.models.group import Group
     from app.models.role import Role
 
@@ -27,6 +28,7 @@ class User(Base):
     email: Mapped[str] = mapped_column(String(255), unique=True, index=True, nullable=False)
     full_name: Mapped[str | None] = mapped_column(String(255), nullable=True)
     password_hash: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    role: Mapped[str] = mapped_column(String(20), server_default=text("'User'"), default="User", nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, server_default=text("true"), nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at: Mapped[datetime] = mapped_column(
@@ -50,3 +52,4 @@ class User(Base):
         back_populates="user",
         passive_deletes=True,
     )
+    documents: Mapped[list["Document"]] = relationship(back_populates="author", passive_deletes=True)

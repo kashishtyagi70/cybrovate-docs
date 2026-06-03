@@ -23,6 +23,7 @@ Navigate to:
 ```text
 IAM → Roles → Create Role
 ```
+![Medium screenshot](/media/images/aws/aws-step-1.png){.media-md}
 
 ---
 
@@ -33,7 +34,7 @@ Select:
 ```text
 Custom Trust Policy
 ```
-
+![Medium screenshot](/media/images/aws/aws-step-2.png){.media-md}
 ---
 
 ## Step 3 — Paste Trust Policy JSON
@@ -59,7 +60,7 @@ Paste the following JSON configuration:
   ]
 }
 ```
-
+![Medium screenshot](/media/images/aws/aws-step-3.png){.media-md}
 ---
 
 ## Step 4 — Paste Permission Policy JSON
@@ -69,7 +70,7 @@ Paste the required permission policy JSON provided by Cybrovate.
 ```text
 Paste the onboarding permission policy here.
 ```
-
+![Medium screenshot](/media/images/aws/aws-step-4.png){.media-md}
 ---
 
 ## Step 5 — Enter Role Name
@@ -82,6 +83,7 @@ Cybrovate-BootstrapProvisioningRole
 
 Review all configurations before continuing.
 
+![Medium screenshot](/media/images/aws/aws-step-5.png){.media-md}
 ---
 
 ## Step 6 — Copy Role ARN
@@ -93,7 +95,7 @@ Example:
 ```text
 arn:aws:iam::123456788012:role/Cybrovate-BootstrapProvisioningRole
 ```
-
+![Medium screenshot](/media/images/aws/aws-step-6.png){.media-md}
 ---
 
 ## Step 7 — Click Create Role
@@ -105,7 +107,7 @@ Create Role
 ```
 
 The role will now be available for onboarding integration.
-
+![Medium screenshot](/media/images/aws/aws-step-7.png){.media-md}
 ---
 
 # Important Notes

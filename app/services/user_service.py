@@ -41,13 +41,27 @@ def get_user_by_username(db: Session, username: str) -> User | None:
     return db.scalar(statement)
 
 
+def get_user_by_email(db: Session, email: str) -> User | None:
+    statement = select(User).options(selectinload(User.roles), selectinload(User.groups)).where(User.email == email)
+    return db.scalar(statement)
+
+
+def get_user_by_username_or_email(db: Session, identifier: str) -> User | None:
+    statement = (
+        select(User)
+        .options(selectinload(User.roles), selectinload(User.groups))
+        .where((User.username == identifier) | (User.email == identifier))
+    )
+    return db.scalar(statement)
+
+
 def has_password_enabled_user(db: Session) -> bool:
     statement = select(User.id).where(User.password_hash.is_not(None)).limit(1)
     return db.scalar(statement) is not None
 
 
 def user_has_role(user: User, role_name: str) -> bool:
-    return any(role.name == role_name for role in user.roles)
+    return user.role == role_name or any(role.name == role_name for role in user.roles)
 
 
 def list_users(db: Session, skip: int = 0, limit: int = 100) -> list[User]:
@@ -57,8 +71,11 @@ def list_users(db: Session, skip: int = 0, limit: int = 100) -> list[User]:
 
 def update_user(db: Session, user: User, user_in: UserUpdate) -> User:
     update_data = user_in.model_dump(exclude_unset=True)
+    password = update_data.pop("password", None)
     for field, value in update_data.items():
         setattr(user, field, value)
+    if password:
+        user.password_hash = hash_password(password)
 
     try:
         db.commit()
@@ -72,6 +89,13 @@ def update_user(db: Session, user: User, user_in: UserUpdate) -> User:
 def delete_user(db: Session, user: User) -> None:
     db.delete(user)
     db.commit()
+
+
+def reset_password(db: Session, user: User, password: str) -> User:
+    user.password_hash = hash_password(password)
+    db.commit()
+    db.refresh(user)
+    return user
 
 
 def assign_role(db: Session, user: User, role: Role) -> User:

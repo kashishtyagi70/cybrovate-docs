@@ -7,4 +7,6 @@ sqlalchemy>=2.0
 alembic
 psycopg2-binary
 email-validator
-httpx2
+httpx
+bcrypt
+PyJWT

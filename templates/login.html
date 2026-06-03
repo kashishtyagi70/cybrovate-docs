@@ -39,25 +39,60 @@
                     <button type="submit">Create Admin</button>
                 </form>
             {% else %}
-                <p class="dashboard-kicker">Admin Login</p>
-                <h1 id="login-title">Welcome back</h1>
-                <p class="login-copy">Sign in to manage page visibility, roles, and groups.</p>
+                <div class="auth-grid">
+                    <div class="auth-panel">
+                        <p class="dashboard-kicker">Sign In</p>
+                        <h1 id="login-title">Welcome back</h1>
+                        <p class="login-copy">Sign in to manage or read protected documentation.</p>
 
-                {% if error %}
-                    <div class="login-error">{{ error }}</div>
-                {% endif %}
+                        {% if error %}
+                            <div class="login-error">{{ error }}</div>
+                        {% endif %}
 
-                <form class="login-form" action="/login" method="post">
-                    <label>
-                        <span>Username</span>
-                        <input name="username" type="text" autocomplete="username" required>
-                    </label>
-                    <label>
-                        <span>Password</span>
-                        <input name="password" type="password" autocomplete="current-password" required>
-                    </label>
-                    <button type="submit">Sign In</button>
-                </form>
+                        <form class="login-form" action="/login" method="post">
+                            <label>
+                                <span>Username</span>
+                                <input name="username" type="text" autocomplete="username" required>
+                            </label>
+                            <label>
+                                <span>Password</span>
+                                <input name="password" type="password" autocomplete="current-password" required>
+                            </label>
+                            <button type="submit">Sign In</button>
+                        </form>
+                        <a class="auth-helper-link" href="/forgot-password">Forgot password?</a>
+                    </div>
+
+                    <div class="auth-panel">
+                        <p class="dashboard-kicker">Sign Up</p>
+                        <h2>Create an account</h2>
+                        <p class="login-copy">New accounts can read public and signed-in documentation.</p>
+
+                        {% if signup_error %}
+                            <div class="login-error">{{ signup_error }}</div>
+                        {% endif %}
+
+                        <form class="login-form" action="/signup" method="post">
+                            <label>
+                                <span>Username</span>
+                                <input name="username" type="text" autocomplete="username" required>
+                            </label>
+                            <label>
+                                <span>Email</span>
+                                <input name="email" type="email" autocomplete="email" required>
+                            </label>
+                            <label>
+                                <span>Full name</span>
+                                <input name="full_name" type="text" autocomplete="name">
+                            </label>
+                            <label>
+                                <span>Password</span>
+                                <input name="password" type="password" minlength="8" autocomplete="new-password" required>
+                            </label>
+                            <button type="submit">Create Account</button>
+                        </form>
+                    </div>
+                </div>
             {% endif %}
         </section>
     </main>

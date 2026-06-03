@@ -13,17 +13,24 @@ from sqlalchemy.orm import Session
 from app.database import SessionLocal, get_db
 from app.models import DocumentPage
 from app.routers import audit_logs, roles, users
+from app.routes import admin as admin_routes
+from app.routes import categories as category_routes
+from app.routes import docs as cms_docs_routes
 from app.schemas.group import GroupCreate
 from app.schemas.user import UserCreate
-from app.security import SESSION_COOKIE_NAME, SESSION_MAX_AGE_SECONDS, create_session_token, read_session_user_id, verify_password
+from app.security import SESSION_COOKIE_NAME, SESSION_MAX_AGE_SECONDS, create_access_token, read_session_user_id, verify_password
 from app.services import group_service, page_service, role_service, user_service
+from app.services import document_service
+from app.utils.slug import slugify
+from app.utils.markdown_media import expand_media_shortcodes
 
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 DOCS_DIR = BASE_DIR / "docs"
 IMAGES_DIR = BASE_DIR / "Images"
+MEDIA_DIR = BASE_DIR / "media"
 
-MARKDOWN_EXTENSIONS = ["fenced_code", "tables", "toc"]
+MARKDOWN_EXTENSIONS = ["fenced_code", "tables", "toc", "attr_list"]
 MARKDOWN_EXTENSION_CONFIGS = {"toc": {"toc_depth": "1-3"}}
 TITLE_ACRONYMS = {"api", "aws", "css", "gcp", "html", "http", "https", "iam", "ip", "sdk", "ui", "url"}
 
@@ -33,6 +40,7 @@ templates = Jinja2Templates(directory=str(BASE_DIR / "templates"))
 
 app.mount("/static", StaticFiles(directory=str(BASE_DIR / "static")), name="static")
 app.mount("/images", StaticFiles(directory=str(IMAGES_DIR)), name="images")
+app.mount("/media", StaticFiles(directory=str(MEDIA_DIR)), name="media")
 
 app.include_router(users.router)
 app.include_router(roles.router)
@@ -117,10 +125,8 @@ def build_navigation(directory: Path = DOCS_DIR, allowed_slugs: set[str] | None 
 
 def build_public_navigation(request: Request | None = None) -> list[dict[str, Any]]:
     with SessionLocal() as db:
-        page_service.sync_pages_from_files(db, DOCS_DIR, format_title)
         user = get_optional_user(request, db) if request is not None else None
-        allowed_slugs = page_service.get_accessible_listed_slugs(db, user)
-    return build_navigation(allowed_slugs=allowed_slugs)
+        return document_service.build_document_navigation(db, user)
 
 
 def find_first_page(items: list[dict[str, Any]]) -> str | None:
@@ -209,17 +215,27 @@ def render_markdown(page: str) -> dict[str, Any] | None:
         extension_configs=MARKDOWN_EXTENSION_CONFIGS,
         output_format="html5",
     )
-    content = renderer.convert(raw)
+    content = renderer.convert(expand_media_shortcodes(raw))
     toc_items = flatten_toc(renderer.toc_tokens)
     toc_items = [item for item in toc_items if item["level"] > 1]
 
     return {"content": content, "toc_items": toc_items}
 
 
+cms_docs_routes.init(templates, MARKDOWN_EXTENSIONS, MARKDOWN_EXTENSION_CONFIGS, flatten_toc, build_breadcrumbs)
+admin_routes.init(templates)
+app.include_router(cms_docs_routes.router)
+app.include_router(admin_routes.router)
+app.include_router(category_routes.router)
+
+
 @app.get("/login")
 def login_page(request: Request, db: Session = Depends(get_db)):
-    if get_optional_user(request, db) is not None:
-        return RedirectResponse(url="/admin/dashboard")
+    current_user = get_optional_user(request, db)
+    if current_user is not None:
+        if user_service.user_has_role(current_user, "Admin"):
+            return RedirectResponse(url="/admin/dashboard")
+        return RedirectResponse(url="/docs")
 
     return templates.TemplateResponse(
         request,
@@ -228,6 +244,7 @@ def login_page(request: Request, db: Session = Depends(get_db)):
             "page_title": "Login",
             "setup_mode": not user_service.has_password_enabled_user(db),
             "error": None,
+            "signup_error": None,
         },
     )
 
@@ -248,19 +265,122 @@ def login(
                 "page_title": "Login",
                 "setup_mode": not user_service.has_password_enabled_user(db),
                 "error": "Invalid username or password.",
+                "signup_error": None,
             },
             status_code=status.HTTP_401_UNAUTHORIZED,
         )
 
-    response = RedirectResponse(url="/admin/dashboard", status_code=status.HTTP_303_SEE_OTHER)
+    redirect_url = "/admin/dashboard" if user_service.user_has_role(user, "Admin") else "/docs"
+    response = RedirectResponse(url=redirect_url, status_code=status.HTTP_303_SEE_OTHER)
     response.set_cookie(
         SESSION_COOKIE_NAME,
-        create_session_token(user.id),
+        create_access_token(user.id, user.role),
         max_age=SESSION_MAX_AGE_SECONDS,
         httponly=True,
         samesite="lax",
     )
     return response
+
+
+@app.post("/signup")
+def signup(
+    request: Request,
+    username: str = Form(...),
+    email: str = Form(...),
+    full_name: str | None = Form(None),
+    password: str = Form(...),
+    db: Session = Depends(get_db),
+):
+    if not user_service.has_password_enabled_user(db):
+        return RedirectResponse(url="/login", status_code=status.HTTP_303_SEE_OTHER)
+
+    try:
+        user = user_service.create_user(
+            db,
+            UserCreate(
+                username=username,
+                email=email,
+                full_name=full_name,
+                password=password,
+                role="User",
+                is_active=True,
+            ),
+        )
+    except user_service.DuplicateUserError as exc:
+        return templates.TemplateResponse(
+            request,
+            "login.html",
+            {
+                "page_title": "Login",
+                "setup_mode": False,
+                "error": None,
+                "signup_error": str(exc),
+            },
+            status_code=status.HTTP_409_CONFLICT,
+        )
+
+    viewer_role = role_service.get_role_by_name(db, "Viewer")
+    if viewer_role is not None:
+        user_service.assign_role(db, user, viewer_role)
+
+    response = RedirectResponse(url="/docs", status_code=status.HTTP_303_SEE_OTHER)
+    response.set_cookie(
+        SESSION_COOKIE_NAME,
+        create_access_token(user.id, user.role),
+        max_age=SESSION_MAX_AGE_SECONDS,
+        httponly=True,
+        samesite="lax",
+    )
+    return response
+
+
+@app.get("/forgot-password")
+def forgot_password_page(request: Request):
+    return templates.TemplateResponse(
+        request,
+        "forgot_password.html",
+        {
+            "page_title": "Reset Password",
+            "error": None,
+            "success": None,
+            "current_user": get_template_user(request),
+        },
+    )
+
+
+@app.post("/forgot-password")
+def forgot_password(
+    request: Request,
+    username: str = Form(...),
+    email: str = Form(...),
+    password: str = Form(...),
+    db: Session = Depends(get_db),
+):
+    user = user_service.get_user_by_username(db, username)
+    if user is None or user.email.lower() != email.lower():
+        return templates.TemplateResponse(
+            request,
+            "forgot_password.html",
+            {
+                "page_title": "Reset Password",
+                "error": "Username and email do not match an active account.",
+                "success": None,
+                "current_user": get_template_user(request),
+            },
+            status_code=status.HTTP_404_NOT_FOUND,
+        )
+
+    user_service.reset_password(db, user, password)
+    return templates.TemplateResponse(
+        request,
+        "forgot_password.html",
+        {
+            "page_title": "Reset Password",
+            "error": None,
+            "success": "Password updated. You can sign in with the new password now.",
+            "current_user": get_template_user(request),
+        },
+    )
 
 
 @app.post("/setup")
@@ -287,6 +407,7 @@ def setup_admin(
                 email=email,
                 full_name=full_name,
                 password=password,
+                role="Admin",
                 is_active=True,
             ),
         )
@@ -298,6 +419,7 @@ def setup_admin(
                 "page_title": "Login",
                 "setup_mode": True,
                 "error": str(exc),
+                "signup_error": None,
             },
             status_code=status.HTTP_409_CONFLICT,
         )
@@ -306,7 +428,7 @@ def setup_admin(
     response = RedirectResponse(url="/admin/dashboard", status_code=status.HTTP_303_SEE_OTHER)
     response.set_cookie(
         SESSION_COOKIE_NAME,
-        create_session_token(user.id),
+        create_access_token(user.id, user.role),
         max_age=SESSION_MAX_AGE_SECONDS,
         httponly=True,
         samesite="lax",
@@ -385,7 +507,7 @@ def update_page_access(
 async def home(request: Request):
     navigation = build_public_navigation(request)
     first_page = find_first_page(navigation)
-    docs_entry_url = f"/{first_page}" if first_page else "#"
+    docs_entry_url = f"/docs/{first_page}" if first_page else "/docs"
 
     return templates.TemplateResponse(
         request,
@@ -393,25 +515,6 @@ async def home(request: Request):
         {
             "navigation": navigation,
             "docs_entry_url": docs_entry_url,
-            "page_title": "Home",
-            "current_user": get_template_user(request),
-        },
-    )
-
-
-@app.get("/docs")
-async def docs_entry(request: Request):
-    first_page = find_first_page(build_public_navigation(request))
-
-    if first_page:
-        return RedirectResponse(url=f"/{first_page}")
-
-    return templates.TemplateResponse(
-        request,
-        "home.html",
-        {
-            "navigation": [],
-            "docs_entry_url": "#",
             "page_title": "Home",
             "current_user": get_template_user(request),
         },
@@ -421,44 +524,8 @@ async def docs_entry(request: Request):
 @app.get("/{page:path}")
 async def docs(request: Request, page: str):
     current_page = normalize_page_slug(page)
-    navigation = build_public_navigation(request)
-    first_page = find_first_page(navigation)
-    docs_entry_url = f"/{first_page}" if first_page else "#"
-
     with SessionLocal() as db:
-        page_service.sync_pages_from_files(db, DOCS_DIR, format_title)
-        user = get_optional_user(request, db)
-        public_slugs = page_service.get_accessible_listed_slugs(db, user)
-
-    first_nested_page = find_first_page_in_directory(current_page, public_slugs)
-    if first_nested_page:
-        return RedirectResponse(url=f"/{first_nested_page}")
-
-    with SessionLocal() as db:
-        page_service.sync_pages_from_files(db, DOCS_DIR, format_title)
-        user = get_optional_user(request, db)
-        page_meta = page_service.get_page_by_slug(db, current_page)
-        if page_meta is not None and not page_service.can_user_access_page(page_meta, user):
-            raise HTTPException(
-                status_code=403,
-                detail="This page is restricted.",
-            )
-
-    page_data = render_markdown(current_page)
-    if page_data is None:
-        raise HTTPException(status_code=404, detail="Page not found")
-
-    return templates.TemplateResponse(
-        request,
-        "docs.html",
-        {
-            "content": page_data["content"],
-            "toc_items": page_data["toc_items"],
-            "navigation": navigation,
-            "current_page": current_page,
-            "breadcrumbs": build_breadcrumbs(current_page),
-            "docs_entry_url": docs_entry_url,
-            "page_title": format_title(current_page.rsplit("/", 1)[-1]),
-            "current_user": get_template_user(request),
-        },
-    )
+        db_document_slug = slugify(current_page)
+        if document_service.get_document_by_slug(db, db_document_slug) is not None:
+            return RedirectResponse(url=f"/docs/{db_document_slug}")
+    raise HTTPException(status_code=404, detail="Page not found")

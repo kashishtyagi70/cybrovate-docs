@@ -4,7 +4,7 @@ from alembic import context
 from sqlalchemy import engine_from_config, pool
 
 from app.database import Base, DATABASE_URL
-from app.models import AuditLog, DocumentPage, DocumentPageGroup, DocumentPageRole, Group, Role, User, UserGroup, UserRole
+from app.models import AuditLog, Category, Document, DocumentPage, DocumentPageGroup, DocumentPageRole, Group, Role, User, UserGroup, UserRole
 
 
 config = context.config
@@ -50,6 +50,8 @@ else:
 
 __all__ = [
     "AuditLog",
+    "Category",
+    "Document",
     "DocumentPage",
     "DocumentPageGroup",
     "DocumentPageRole",

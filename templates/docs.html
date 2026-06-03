@@ -22,7 +22,7 @@
                 {# Markdown file from docs/: render as a clickable page link. #}
                 <li class="nav-page">
                     <a
-                        href="/{{ item.slug }}"
+                        href="{{ item.href if item.href is defined else '/' ~ item.slug }}"
                         class="{% if current_page == item.slug %}active{% endif %}"
                         {% if current_page == item.slug %}aria-current="page"{% endif %}
                     >

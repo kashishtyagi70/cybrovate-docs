@@ -14,7 +14,9 @@
     </a>
 
     <div class="topbar-actions">
-        <a class="topbar-link topbar-dashboard-link" href="/admin/dashboard">Dashboard</a>
+        {% if current_user and current_user.role == "Admin" %}
+            <a class="topbar-link topbar-dashboard-link" href="/admin/dashboard">Dashboard</a>
+        {% endif %}
         {% if current_user %}
             <form class="topbar-logout-form" action="/logout" method="post">
                 <button class="topbar-link topbar-logout-button" type="submit">Logout</button>

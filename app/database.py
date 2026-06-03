@@ -28,6 +28,7 @@ DATABASE_URL = os.getenv(
     "DATABASE_URL",
     "postgresql://postgres:password@localhost:5432/docs_portal",
 )
+SECRET_KEY = os.getenv("SECRET_KEY", "change-this-secret-key-for-local-development")
 
 engine = create_engine(DATABASE_URL, pool_pre_ping=True)
 SessionLocal = sessionmaker(bind=engine, autocommit=False, autoflush=False)

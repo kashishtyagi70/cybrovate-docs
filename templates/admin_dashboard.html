@@ -7,107 +7,326 @@
     <main class="dashboard-main">
         <section class="dashboard-header">
             <div>
-                <p class="dashboard-kicker">Access Control</p>
-                <h1>Documentation Dashboard</h1>
+                <p class="dashboard-kicker">Admin Workspace</p>
+                <h1>Documentation CMS</h1>
+                <p class="dashboard-subtitle">Create, publish, and protect PostgreSQL-backed documentation.</p>
             </div>
-            <a class="dashboard-link-button" href="/docs">View Public Docs</a>
+            <form action="/admin/import-docs" method="post">
+                <button class="dashboard-link-button" type="submit">Import /docs Folder</button>
+            </form>
         </section>
 
-        <section class="dashboard-panel" aria-labelledby="groups-title">
+        <section class="stats-grid" aria-label="Dashboard statistics">
+            <div class="stat-card">
+                <span>Total Documents</span>
+                <strong>{{ stats.total_documents }}</strong>
+            </div>
+            <div class="stat-card">
+                <span>Published</span>
+                <strong>{{ stats.published_documents }}</strong>
+            </div>
+            <div class="stat-card">
+                <span>Users</span>
+                <strong>{{ stats.total_users }}</strong>
+            </div>
+            <div class="stat-card">
+                <span>Categories</span>
+                <strong>{{ stats.total_categories }}</strong>
+            </div>
+        </section>
+
+        <section class="dashboard-panel" aria-labelledby="editor-title">
             <div class="dashboard-panel-header">
                 <div>
-                    <h2 id="groups-title">Groups</h2>
-                    <p>Create groups that can later be connected to authenticated users.</p>
+                    <h2 id="editor-title">Markdown Editor</h2>
+                    <p>Save as draft or publish immediately. Preview updates as you type.</p>
                 </div>
             </div>
 
-            <form class="group-form" action="/admin/groups" method="post">
-                <label>
-                    <span>Group name</span>
-                    <input name="name" type="text" maxlength="100" required>
-                </label>
-                <label>
-                    <span>Description</span>
-                    <input name="description" type="text" maxlength="500">
-                </label>
-                <button type="submit">Add Group</button>
-            </form>
+            <form class="editor-grid" action="/admin/docs" method="post">
+                <div class="editor-fields">
+                    <label class="field-block">
+                        <span>Title</span>
+                        <input name="title" type="text" maxlength="255" required>
+                    </label>
+                    <label class="field-block">
+                        <span>Slug</span>
+                        <input name="slug" type="text" maxlength="500" placeholder="auto-generated if empty">
+                    </label>
+                    <label class="field-block">
+                        <span>Category</span>
+                        <select name="category_id">
+                            <option value="">Uncategorized</option>
+                            {% for category in categories %}
+                                <option value="{{ category.id }}">{{ category.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </label>
+                    <label class="field-block">
+                        <span>Visibility</span>
+                        <select name="visibility">
+                            <option value="public">Public</option>
+                            <option value="private">Private</option>
+                            <option value="admin">Admin only</option>
+                        </select>
+                    </label>
+                    <label class="field-block editor-content">
+                        <span>Markdown</span>
+                        <textarea name="content" data-markdown-input required># New document</textarea>
+                    </label>
+                    <div class="editor-actions">
+                        <button type="submit">Save Draft</button>
+                        <label class="listed-toggle">
+                            <input type="checkbox" name="is_published" value="true">
+                            <span>Publish now</span>
+                        </label>
+                    </div>
+                </div>
 
-            {% if groups %}
-                <div class="group-list" aria-label="Existing groups">
-                    {% for group in groups %}
-                        <span class="group-pill">{{ group.name }}</span>
+                <aside class="markdown-preview-panel">
+                    <span>Live Preview</span>
+                    <div class="document markdown-preview" data-markdown-preview></div>
+                </aside>
+            </form>
+        </section>
+
+        <section class="dashboard-panel" aria-labelledby="upload-title">
+            <div class="dashboard-panel-header">
+                <div>
+                    <h2 id="upload-title">Upload Markdown</h2>
+                    <p>Save a .md file directly into the database without keeping it in the project folder.</p>
+                </div>
+            </div>
+
+            <form class="upload-form" action="/admin/docs/upload" method="post" enctype="multipart/form-data">
+                <label class="field-block">
+                    <span>Markdown file</span>
+                    <input name="file" type="file" accept=".md,text/markdown,text/plain" required>
+                </label>
+                <label class="field-block">
+                    <span>Title</span>
+                    <input name="title" type="text" maxlength="255" placeholder="uses filename if empty">
+                </label>
+                <label class="field-block">
+                    <span>Slug</span>
+                    <input name="slug" type="text" maxlength="500" placeholder="uses filename if empty">
+                </label>
+                <label class="field-block">
+                    <span>Category</span>
+                    <select name="category_id">
+                        <option value="">Uncategorized</option>
+                        {% for category in categories %}
+                            <option value="{{ category.id }}">{{ category.name }}</option>
+                        {% endfor %}
+                    </select>
+                </label>
+                <label class="field-block">
+                    <span>Visibility</span>
+                    <select name="visibility">
+                        <option value="public">Public</option>
+                        <option value="private">Private</option>
+                        <option value="admin">Admin only</option>
+                    </select>
+                </label>
+                <label class="listed-toggle">
+                    <input type="checkbox" name="is_published" value="true" checked>
+                    <span>Publish now</span>
+                </label>
+                <button type="submit">Upload to Database</button>
+            </form>
+        </section>
+
+        <section class="dashboard-panel" aria-labelledby="documents-title">
+            <div class="dashboard-panel-header">
+                <div>
+                    <h2 id="documents-title">Documents</h2>
+                    <p>Search, edit, publish, unpublish, or remove documents.</p>
+                </div>
+                <form class="dashboard-search" action="/admin/dashboard" method="get">
+                    <input name="q" type="search" value="{{ q }}" placeholder="Search documents">
+                    <button type="submit">Search</button>
+                </form>
+            </div>
+
+            <div class="cms-table-list">
+                {% for document in documents %}
+                    <details class="cms-row">
+                        <summary>
+                            <span>
+                                <strong>{{ document.title }}</strong>
+                                <small>/docs/{{ document.slug }}</small>
+                            </span>
+                            <span class="cms-badges">
+                                <mark>{{ document.visibility }}</mark>
+                                <mark>{{ "published" if document.is_published else "draft" }}</mark>
+                            </span>
+                        </summary>
+                        <form class="cms-edit-form" action="/admin/docs/{{ document.id }}" method="post">
+                            <label class="field-block">
+                                <span>Title</span>
+                                <input name="title" type="text" value="{{ document.title }}" required>
+                            </label>
+                            <label class="field-block">
+                                <span>Slug</span>
+                                <input name="slug" type="text" value="{{ document.slug }}" required>
+                            </label>
+                            <label class="field-block">
+                                <span>Category</span>
+                                <select name="category_id">
+                                    <option value="">Uncategorized</option>
+                                    {% for category in categories %}
+                                        <option value="{{ category.id }}" {% if document.category_id == category.id %}selected{% endif %}>{{ category.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </label>
+                            <label class="field-block">
+                                <span>Visibility</span>
+                                <select name="visibility">
+                                    <option value="public" {% if document.visibility == "public" %}selected{% endif %}>Public</option>
+                                    <option value="private" {% if document.visibility == "private" %}selected{% endif %}>Private</option>
+                                    <option value="admin" {% if document.visibility == "admin" %}selected{% endif %}>Admin only</option>
+                                </select>
+                            </label>
+                            <label class="field-block cms-textarea">
+                                <span>Markdown</span>
+                                <textarea name="content" required>{{ document.content }}</textarea>
+                            </label>
+                            <label class="listed-toggle">
+                                <input type="checkbox" name="is_published" value="true" {% if document.is_published %}checked{% endif %}>
+                                <span>Published</span>
+                            </label>
+                            <div class="cms-row-actions">
+                                <button type="submit">Save</button>
+                                <button type="submit" form="publish-{{ document.id }}">{{ "Unpublish" if document.is_published else "Publish" }}</button>
+                                <button class="danger-button" type="submit" form="delete-{{ document.id }}">Delete</button>
+                            </div>
+                        </form>
+                        <form id="publish-{{ document.id }}" action="/admin/docs/{{ document.id }}/publish" method="post"></form>
+                        <form id="delete-{{ document.id }}" action="/admin/docs/{{ document.id }}/delete" method="post"></form>
+                    </details>
+                {% else %}
+                    <p class="empty-option">No documents yet. Import the docs folder or create one above.</p>
+                {% endfor %}
+            </div>
+        </section>
+
+        <section class="dashboard-columns">
+            <div class="dashboard-panel" aria-labelledby="categories-title">
+                <div class="dashboard-panel-header">
+                    <div>
+                        <h2 id="categories-title">Categories</h2>
+                        <p>Create and organize document categories.</p>
+                    </div>
+                </div>
+
+                <form class="compact-form" action="/admin/categories" method="post">
+                    <input name="name" type="text" placeholder="Category name" required>
+                    <input name="slug" type="text" placeholder="optional-slug">
+                    <button type="submit">Add</button>
+                </form>
+
+                <div class="compact-list">
+                    {% for category in categories %}
+                        <form action="/admin/categories/{{ category.id }}" method="post">
+                            <input name="name" value="{{ category.name }}" required>
+                            <input name="slug" value="{{ category.slug }}" required>
+                            <button type="submit">Save</button>
+                            <button class="danger-button" type="submit" form="delete-category-{{ category.id }}">Delete</button>
+                        </form>
+                        <form id="delete-category-{{ category.id }}" action="/admin/categories/{{ category.id }}/delete" method="post"></form>
                     {% endfor %}
                 </div>
-            {% endif %}
-        </section>
-
-        <section class="dashboard-panel" aria-labelledby="pages-title">
-            <div class="dashboard-panel-header">
-                <div>
-                    <h2 id="pages-title">Pages</h2>
-                    <p>Public pages are visible now. Admin, role, and group pages are stored for the next auth step.</p>
-                </div>
             </div>
 
-            <div class="page-access-list">
-                {% for page in pages %}
-                    {% set selected_role_ids = page.roles | map(attribute="id") | list %}
-                    {% set selected_group_ids = page.groups | map(attribute="id") | list %}
-                    <form class="page-access-row" action="/admin/pages/{{ page.id }}/access" method="post">
-                        <div class="page-access-title">
-                            <strong>{{ page.title }}</strong>
-                            <span>{{ page.slug }}</span>
-                        </div>
+            <div class="dashboard-panel" aria-labelledby="users-title">
+                <div class="dashboard-panel-header">
+                    <div>
+                        <h2 id="users-title">Users</h2>
+                        <p>Create users and control Admin/User roles.</p>
+                    </div>
+                </div>
 
-                        <label class="field-block">
-                            <span>Visibility</span>
-                            <select name="access_mode">
-                                <option value="public" {% if page.access_mode == "public" %}selected{% endif %}>Public</option>
-                                <option value="roles" {% if page.access_mode == "roles" %}selected{% endif %}>Admin / role based</option>
-                                <option value="groups" {% if page.access_mode == "groups" %}selected{% endif %}>Group based</option>
+                <form class="user-create-form" action="/admin/users" method="post">
+                    <input name="username" type="text" placeholder="username" required>
+                    <input name="email" type="email" placeholder="email" required>
+                    <input name="full_name" type="text" placeholder="full name">
+                    <input name="password" type="password" placeholder="password" minlength="8" required>
+                    <select name="role">
+                        <option value="User">User</option>
+                        <option value="Admin">Admin</option>
+                    </select>
+                    <label class="listed-toggle">
+                        <input type="checkbox" name="is_active" value="true" checked>
+                        <span>Active</span>
+                    </label>
+                    <button type="submit">Create</button>
+                </form>
+
+                <div class="compact-list">
+                    {% for user in users %}
+                        <form action="/admin/users/{{ user.id }}" method="post">
+                            <input name="username" value="{{ user.username }}" required>
+                            <input name="email" value="{{ user.email }}" required>
+                            <input name="full_name" value="{{ user.full_name or '' }}">
+                            <input name="password" type="password" placeholder="new password">
+                            <select name="role">
+                                <option value="User" {% if user.role == "User" %}selected{% endif %}>User</option>
+                                <option value="Admin" {% if user.role == "Admin" %}selected{% endif %}>Admin</option>
                             </select>
-                        </label>
-
-                        <fieldset class="access-options">
-                            <legend>Roles</legend>
-                            {% for role in roles %}
-                                <label>
-                                    <input type="checkbox" name="role_ids" value="{{ role.id }}" {% if role.id in selected_role_ids %}checked{% endif %}>
-                                    <span>{{ role.name }}</span>
-                                </label>
-                            {% endfor %}
-                        </fieldset>
-
-                        <fieldset class="access-options">
-                            <legend>Groups</legend>
-                            {% if groups %}
-                                {% for group in groups %}
-                                    <label>
-                                        <input type="checkbox" name="group_ids" value="{{ group.id }}" {% if group.id in selected_group_ids %}checked{% endif %}>
-                                        <span>{{ group.name }}</span>
-                                    </label>
-                                {% endfor %}
-                            {% else %}
-                                <span class="empty-option">No groups yet</span>
+                            <label class="listed-toggle">
+                                <input type="checkbox" name="is_active" value="true" {% if user.is_active %}checked{% endif %}>
+                                <span>Active</span>
+                            </label>
+                            <button type="submit">Save</button>
+                            {% if user.id != current_user.id %}
+                                <button class="danger-button" type="submit" form="delete-user-{{ user.id }}">Delete</button>
                             {% endif %}
-                        </fieldset>
-
-                        <label class="field-block">
-                            <span>Notes</span>
-                            <input name="notes" type="text" value="{{ page.notes or '' }}" maxlength="500">
-                        </label>
-
-                        <label class="listed-toggle">
-                            <input type="checkbox" name="is_listed" value="true" {% if page.is_listed %}checked{% endif %}>
-                            <span>Show in public navigation</span>
-                        </label>
-
-                        <button type="submit">Save</button>
-                    </form>
-                {% endfor %}
+                        </form>
+                        <form id="delete-user-{{ user.id }}" action="/admin/users/{{ user.id }}/delete" method="post"></form>
+                    {% endfor %}
+                </div>
             </div>
         </section>
     </main>
 </div>
+
+<script>
+    (function () {
+        var input = document.querySelector("[data-markdown-input]");
+        var preview = document.querySelector("[data-markdown-preview]");
+        if (!input || !preview) {
+            return;
+        }
+
+        function escapeHtml(value) {
+            return value.replace(/[&<>"']/g, function (char) {
+                return {"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;"}[char];
+            });
+        }
+
+        function renderMarkdown(markdown) {
+            return escapeHtml(markdown)
+                .replace(/!\[video(?::([^\]]+))?\]\(([^)\s]+)(?:\s+&quot;([^&]+)&quot;)?\)/g, function (_, label, src, title) {
+                    var caption = title || label || "";
+                    return '<figure class="media-embed video-embed"><video controls preload="metadata" src="' + src + '"></video>' + (caption ? '<figcaption>' + caption + '</figcaption>' : '') + '</figure>';
+                })
+                .replace(/^### (.*)$/gm, "<h3>$1</h3>")
+                .replace(/^## (.*)$/gm, "<h2>$1</h2>")
+                .replace(/^# (.*)$/gm, "<h1>$1</h1>")
+                .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
+                .replace(/`([^`]+)`/g, "<code>$1</code>")
+                .replace(/\n\n/g, "</p><p>")
+                .replace(/^(.+)$/gm, function (line) {
+                    return line.startsWith("<h") ? line : line;
+                });
+        }
+
+        function updatePreview() {
+            preview.innerHTML = "<p>" + renderMarkdown(input.value || "") + "</p>";
+        }
+
+        input.addEventListener("input", updatePreview);
+        updatePreview();
+    })();
+</script>
 {% endblock %}

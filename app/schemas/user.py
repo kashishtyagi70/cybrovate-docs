@@ -9,6 +9,7 @@ class UserBase(BaseModel):
     username: str = Field(min_length=1, max_length=100)
     email: EmailStr
     full_name: str | None = Field(default=None, max_length=255)
+    role: str = Field(default="User", pattern="^(Admin|User)$")
     is_active: bool = True
 
 
@@ -20,7 +21,9 @@ class UserUpdate(BaseModel):
     username: str | None = Field(default=None, min_length=1, max_length=100)
     email: EmailStr | None = None
     full_name: str | None = Field(default=None, max_length=255)
+    role: str | None = Field(default=None, pattern="^(Admin|User)$")
     is_active: bool | None = None
+    password: str | None = Field(default=None, min_length=8, max_length=128)
 
 
 class UserRead(UserBase):
